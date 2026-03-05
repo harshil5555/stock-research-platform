@@ -11,7 +11,7 @@ export function useLogin() {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: async (data: { email: string; password: string }) => {
+    mutationFn: async (data: { username: string; password: string }) => {
       const res = await api.post<AuthResponse>('/auth/login', data);
       return res.data;
     },
@@ -22,27 +22,6 @@ export function useLogin() {
     },
     onError: () => {
       addToast({ type: 'error', message: 'Invalid credentials' });
-    },
-  });
-}
-
-export function useRegister() {
-  const login = useAuthStore((s) => s.login);
-  const addToast = useUIStore((s) => s.addToast);
-  const navigate = useNavigate();
-
-  return useMutation({
-    mutationFn: async (data: { email: string; password: string; name: string }) => {
-      const res = await api.post<AuthResponse>('/auth/register', data);
-      return res.data;
-    },
-    onSuccess: (data) => {
-      login(data.token, data.user);
-      addToast({ type: 'success', message: 'Account created!' });
-      navigate('/');
-    },
-    onError: () => {
-      addToast({ type: 'error', message: 'Registration failed' });
     },
   });
 }

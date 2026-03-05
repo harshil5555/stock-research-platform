@@ -5,16 +5,13 @@ import { TrendingUp } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { useAuthStore } from '@/stores/authStore';
-import { useLogin, useRegister } from '@/hooks/useAuth';
+import { useLogin } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const [isRegister, setIsRegister] = useState(false);
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const login = useLogin();
-  const register = useRegister();
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
@@ -22,14 +19,8 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isRegister) {
-      register.mutate({ email, password, name });
-    } else {
-      login.mutate({ email, password });
-    }
+    login.mutate({ username, password });
   };
-
-  const isPending = login.isPending || register.isPending;
 
   return (
     <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center p-4">
@@ -52,7 +43,7 @@ export default function LoginPage() {
             Stock Research
           </h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
-            {isRegister ? 'Create your account' : 'Sign in to continue'}
+            Sign in to continue
           </p>
         </div>
 
@@ -63,26 +54,14 @@ export default function LoginPage() {
           className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-6 shadow-sm"
         >
           <form onSubmit={handleSubmit} className="space-y-4">
-            {isRegister && (
-              <Input
-                label="Name"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-                required
-                disabled={isPending}
-              />
-            )}
             <Input
-              label="Email"
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              label="Username"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
               required
-              disabled={isPending}
+              disabled={login.isPending}
             />
             <Input
               label="Password"
@@ -90,24 +69,14 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your password"
+              placeholder="Enter your password"
               required
-              minLength={6}
-              disabled={isPending}
+              disabled={login.isPending}
             />
-            <Button type="submit" className="w-full" loading={isPending}>
-              {isRegister ? 'Create Account' : 'Sign In'}
+            <Button type="submit" className="w-full" loading={login.isPending}>
+              Sign In
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => setIsRegister(!isRegister)}
-              disabled={isPending}
-              className="text-sm text-[var(--accent)] hover:underline disabled:opacity-50"
-            >
-              {isRegister ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-            </button>
-          </div>
         </motion.div>
       </motion.div>
     </div>
