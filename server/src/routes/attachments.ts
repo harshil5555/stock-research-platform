@@ -3,12 +3,21 @@ import { eq } from "drizzle-orm";
 import path from "path";
 import fs from "fs";
 import multer from "multer";
+import fileType from "file-type";
 import { db } from "../db";
 import { attachments, sources } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { upload } from "../middleware/upload";
 import { AuthRequest, param, handleRouteError } from "../types";
 import { broadcast } from "../ws/broadcast";
+
+const ALLOWED_MAGIC_MIMES = new Set([
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+]);
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.resolve(__dirname, "../../uploads");
 
@@ -80,6 +89,22 @@ router.post(
         res.status(400).json({ error: "No file uploaded" });
         return;
       }
+
+      // Magic byte validation: verify actual file content matches claimed MIME type
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const detected = await fileType.fromBuffer(fileBuffer);
+      if (detected && ALLOWED_MAGIC_MIMES.has(detected.mime)) {
+        // Detected type is in our whitelist — trust the detected MIME over client-reported
+        req.file.mimetype = detected.mime;
+      } else if (detected && !ALLOWED_MAGIC_MIMES.has(detected.mime)) {
+        // Detected a binary type that's NOT in our whitelist (e.g., exe disguised as pdf)
+        fs.unlinkSync(req.file.path);
+        res.status(400).json({
+          error: `File content does not match allowed types. Detected: ${detected.mime}`,
+        });
+        return;
+      }
+      // If no magic bytes detected (text files, CSV, Office docs), trust the Multer MIME check
 
       const [attachment] = await db
         .insert(attachments)
