@@ -1,4 +1,4 @@
-name: Deploy Stock Research Platform
+name: Deploy
 
 on:
   push:
@@ -9,21 +9,22 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to production
+      - name: Deploy to server
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
+          host: srv1105540.hstgr.cloud
+          username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           timeout: 180s
           command_timeout: 300s
           script_stop: true
           script: |
             set -e
-            cd ${{ secrets.DEPLOY_PATH }}
+            cd /home/root/stock-research-platform
             git pull origin main
+            cd /root
             docker compose up -d --build stock-app
-            docker image prune -f --filter "label=com.docker.compose.project=stock-research-platform"
+            docker image prune -f --filter "until=24h"
             for i in $(seq 1 30); do
               curl -sf http://localhost:3000/api/health && exit 0
               sleep 2
