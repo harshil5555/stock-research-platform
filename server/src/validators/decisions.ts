@@ -9,7 +9,7 @@ export const createDecisionSchema = z.object({
     "sold",
     "watching",
   ]),
-  reasoning: z.string().optional().nullable(),
+  reasoning: z.string().max(5000).optional().nullable(),
 });
 
 export type CreateDecisionInput = z.infer<typeof createDecisionSchema>;

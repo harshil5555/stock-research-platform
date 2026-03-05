@@ -1,17 +1,16 @@
-import { useNavigate } from 'react-router-dom';
 import { LogOut, User } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { useLogout } from '@/hooks/useAuth';
 import { disconnectSocket } from '@/lib/socket';
 import ThemeToggle from './ThemeToggle';
 
 export default function Header() {
-  const { user, logout } = useAuthStore();
-  const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const { mutate: serverLogout } = useLogout();
 
   const handleLogout = () => {
     disconnectSocket();
-    logout();
-    navigate('/login');
+    serverLogout();
   };
 
   return (
@@ -29,6 +28,7 @@ export default function Header() {
           onClick={handleLogout}
           className="p-2 rounded-xl hover:bg-[var(--hover)] text-[var(--text-secondary)] hover:text-[var(--color-sell)] transition-colors"
           title="Logout"
+          aria-label="Logout"
         >
           <LogOut size={18} />
         </button>

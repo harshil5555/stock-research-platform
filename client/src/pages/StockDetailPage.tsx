@@ -1,18 +1,19 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Tabs from '@/components/ui/Tabs';
 import Modal from '@/components/ui/Modal';
 import Skeleton from '@/components/ui/Skeleton';
 import StockDetailHeader from '@/components/stocks/StockDetail';
+import StockForm from '@/components/stocks/StockForm';
 import AnalysisView from '@/components/analysis/AnalysisView';
 import AnalysisEditor from '@/components/analysis/AnalysisEditor';
 import CommentThread from '@/components/comments/CommentThread';
 import DecisionForm from '@/components/decisions/DecisionForm';
 import DecisionHistory from '@/components/decisions/DecisionHistory';
-import { useStock, useStockAnalyses } from '@/hooks/useStocks';
+import { useStock, useStockAnalyses, useDeleteStock } from '@/hooks/useStocks';
 import { useDecisions } from '@/hooks/useDecisions';
 
 export default function StockDetailPage() {
@@ -20,9 +21,12 @@ export default function StockDetailPage() {
   const { data: stock, isLoading } = useStock(id ?? '');
   const { data: analyses } = useStockAnalyses(id ?? '');
   const { data: decisions } = useDecisions(id ?? '');
+  const deleteStock = useDeleteStock();
+  const navigate = useNavigate();
   const [tab, setTab] = useState('analysis');
   const [showAnalysisForm, setShowAnalysisForm] = useState(false);
   const [showDecisionForm, setShowDecisionForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   if (isLoading) {
     return (
@@ -46,13 +50,35 @@ export default function StockDetailPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <Link
-        to="/stocks"
-        className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors"
-      >
-        <ArrowLeft size={16} />
-        Back to Stocks
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          to="/stocks"
+          className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors"
+        >
+          <ArrowLeft size={16} />
+          Back to Stocks
+        </Link>
+        <div className="flex gap-1">
+          <button
+            onClick={() => setShowEditForm(true)}
+            aria-label="Edit stock"
+            className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--hover)] transition-all"
+          >
+            <Pencil size={16} />
+          </button>
+          <button
+            onClick={() => {
+              if (window.confirm('Delete this stock? This cannot be undone.')) {
+                deleteStock.mutate(stock.id, { onSuccess: () => navigate('/stocks') });
+              }
+            }}
+            aria-label="Delete stock"
+            className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--color-sell)] hover:bg-[var(--hover)] transition-all"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         <StockDetailHeader stock={stock} />
@@ -95,6 +121,10 @@ export default function StockDetailPage() {
 
       <Modal open={showDecisionForm} onClose={() => setShowDecisionForm(false)} title="Record Decision">
         <DecisionForm stockId={stock.id} onClose={() => setShowDecisionForm(false)} />
+      </Modal>
+
+      <Modal open={showEditForm} onClose={() => setShowEditForm(false)} title="Edit Stock">
+        <StockForm stock={stock} onClose={() => setShowEditForm(false)} />
       </Modal>
     </div>
   );

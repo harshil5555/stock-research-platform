@@ -23,7 +23,7 @@ router.get(
   authMiddleware,
   async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const { status, assignedTo, search, sort, order } = req.query;
+      const { status, assignedTo, search, sort, order, priority } = req.query;
 
       const conditions: SQL[] = [];
 
@@ -35,6 +35,12 @@ router.get(
       if (assignedTo && typeof assignedTo === "string") {
         if (UUID_RE.test(assignedTo)) {
           conditions.push(eq(todos.assignedTo, assignedTo));
+        }
+      }
+      if (priority && typeof priority === "string") {
+        const p = parseInt(priority, 10);
+        if (!isNaN(p) && p >= 0 && p <= 10) {
+          conditions.push(eq(todos.priority, p));
         }
       }
       if (search && typeof search === "string") {
@@ -60,6 +66,7 @@ router.get(
           priority: todos.priority,
           createdBy: todos.createdBy,
           assignedTo: todos.assignedTo,
+          dueDate: todos.dueDate,
           createdAt: todos.createdAt,
           updatedAt: todos.updatedAt,
         })

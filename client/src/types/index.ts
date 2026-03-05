@@ -16,6 +16,7 @@ export interface Todo {
   status: 'pending' | 'in_progress' | 'done';
   priority: number;
   assignedTo: string | null;
+  dueDate: string | null;
   createdBy: string;
   createdAt: string;
   updatedAt: string;

@@ -8,6 +8,7 @@ interface AuthState {
   onlineUsers: string[];
   login: (token: string, user: User) => void;
   logout: () => void;
+  setToken: (token: string) => void;
   updateUser: (user: Partial<User>) => void;
   setUserOnline: (userId: string) => void;
   setUserOffline: (userId: string) => void;
@@ -37,6 +38,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     set({ token: null, user: null, isAuthenticated: false, onlineUsers: [] });
+  },
+  setToken: (token) => {
+    localStorage.setItem('token', token);
+    set({ token });
   },
   updateUser: (partial) =>
     set((state) => {

@@ -17,6 +17,7 @@ RUN npm run build
 # Stage 3: Production
 FROM node:22-alpine AS production
 WORKDIR /app
+ENV NODE_ENV=production
 
 # Create non-root user
 RUN addgroup -g 1001 appgroup && \
@@ -27,6 +28,7 @@ COPY server/package*.json ./
 RUN npm ci --omit=dev
 
 COPY --from=server-build /build/server/dist ./dist
+COPY --from=server-build /build/server/drizzle ./drizzle
 
 # Copy client build as static files
 COPY --from=client-build /build/client/dist ./public

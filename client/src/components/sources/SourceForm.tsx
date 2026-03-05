@@ -3,33 +3,38 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Textarea from '@/components/ui/Textarea';
-import { useCreateSource } from '@/hooks/useSources';
+import { useCreateSource, useUpdateSource } from '@/hooks/useSources';
 import type { Source } from '@/types';
 
 interface SourceFormProps {
   onClose: () => void;
+  source?: Source;
 }
 
-export default function SourceForm({ onClose }: SourceFormProps) {
-  const [title, setTitle] = useState('');
-  const [url, setUrl] = useState('');
-  const [sourceType, setSourceType] = useState<Source['sourceType']>('article');
-  const [summary, setSummary] = useState('');
-  const [notes, setNotes] = useState('');
+export default function SourceForm({ onClose, source }: SourceFormProps) {
+  const isEditing = !!source;
+  const [title, setTitle] = useState(source?.title ?? '');
+  const [url, setUrl] = useState(source?.url ?? '');
+  const [sourceType, setSourceType] = useState<Source['sourceType']>(source?.sourceType ?? 'article');
+  const [summary, setSummary] = useState(source?.summary ?? '');
+  const [notes, setNotes] = useState(source?.notes ?? '');
   const createSource = useCreateSource();
+  const updateSource = useUpdateSource();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createSource.mutate(
-      {
-        title,
-        url: url || null,
-        sourceType,
-        summary: summary || null,
-        notes: notes || null,
-      },
-      { onSuccess: onClose }
-    );
+    const payload = {
+      title,
+      url: url || null,
+      sourceType,
+      summary: summary || null,
+      notes: notes || null,
+    };
+    if (isEditing) {
+      updateSource.mutate({ id: source.id, ...payload }, { onSuccess: onClose });
+    } else {
+      createSource.mutate(payload, { onSuccess: onClose });
+    }
   };
 
   return (
@@ -79,8 +84,8 @@ export default function SourceForm({ onClose }: SourceFormProps) {
         <Button type="button" variant="secondary" onClick={onClose}>
           Cancel
         </Button>
-        <Button type="submit" loading={createSource.isPending}>
-          Add Source
+        <Button type="submit" loading={isEditing ? updateSource.isPending : createSource.isPending}>
+          {isEditing ? 'Save Changes' : 'Add Source'}
         </Button>
       </div>
     </form>

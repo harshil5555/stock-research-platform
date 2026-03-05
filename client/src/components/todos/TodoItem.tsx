@@ -51,6 +51,9 @@ export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
           )}
           <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
             <span>{formatRelative(todo.createdAt)}</span>
+            {todo.dueDate && (
+              <span>Due {formatRelative(todo.dueDate)}</span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-1 shrink-0">

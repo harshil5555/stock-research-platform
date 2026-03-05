@@ -25,3 +25,18 @@ export function useLogin() {
     },
   });
 }
+
+export function useLogout() {
+  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: async () => {
+      await api.post('/auth/logout');
+    },
+    onSettled: () => {
+      logout();
+      navigate('/login');
+    },
+  });
+}

@@ -35,6 +35,7 @@ export function useCreateStock() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['stocks'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
       addToast({ type: 'success', message: 'Stock added' });
     },
     onError: () => addToast({ type: 'error', message: 'Failed to add stock' }),
@@ -50,8 +51,9 @@ export function useUpdateStock() {
       const res = await api.put<Stock>(`/stocks/${id}`, data);
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['stocks'] });
+      qc.invalidateQueries({ queryKey: ['stocks', vars.id] });
       addToast({ type: 'success', message: 'Stock updated' });
     },
     onError: () => addToast({ type: 'error', message: 'Failed to update stock' }),
@@ -77,6 +79,23 @@ export function useMyAnalysis(stockId: string) {
       return res.data;
     },
     enabled: !!stockId,
+  });
+}
+
+export function useDeleteStock() {
+  const qc = useQueryClient();
+  const addToast = useUIStore((s) => s.addToast);
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/stocks/${id}`);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['stocks'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      addToast({ type: 'success', message: 'Stock deleted' });
+    },
+    onError: () => addToast({ type: 'error', message: 'Failed to delete stock' }),
   });
 }
 

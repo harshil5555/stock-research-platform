@@ -1,4 +1,5 @@
-import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -9,15 +10,19 @@ import {
   TrendingUp,
   CheckSquare,
   X,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import Modal from '@/components/ui/Modal';
 import Skeleton from '@/components/ui/Skeleton';
 import FileUpload from '@/components/sources/FileUpload';
+import SourceForm from '@/components/sources/SourceForm';
 import SourceLinker from '@/components/sources/SourceLinker';
 import CommentThread from '@/components/comments/CommentThread';
 import api from '@/lib/api';
-import { useSource, useUnlinkStock } from '@/hooks/useSources';
+import { useSource, useUnlinkStock, useDeleteSource } from '@/hooks/useSources';
 import { useUIStore } from '@/stores/uiStore';
 import { formatDate, sourceTypeLabels } from '@/lib/utils';
 
@@ -40,6 +45,9 @@ export default function SourceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: source, isLoading } = useSource(id ?? '');
   const unlinkStock = useUnlinkStock();
+  const deleteSource = useDeleteSource();
+  const navigate = useNavigate();
+  const [showEditModal, setShowEditModal] = useState(false);
 
   if (isLoading) {
     return (
@@ -91,9 +99,29 @@ export default function SourceDetailPage() {
                     Visit
                   </a>
                 )}
+                <div className="ml-auto flex gap-1">
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    aria-label="Edit source"
+                    className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--hover)] transition-all"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Delete this source? This cannot be undone.')) {
+                        deleteSource.mutate(source.id, { onSuccess: () => navigate('/sources') });
+                      }
+                    }}
+                    aria-label="Delete source"
+                    className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--color-sell)] hover:bg-[var(--hover)] transition-all"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
               {source.summary && (
-                <p className="text-sm text-[var(--text-secondary)] mb-3">{source.summary}</p>
+                <p className="text-sm text-[var(--text-primary)] mb-3">{source.summary}</p>
               )}
               <p className="text-xs text-[var(--text-secondary)]">
                 Added {formatDate(source.createdAt)}
@@ -212,6 +240,10 @@ export default function SourceDetailPage() {
       <Card>
         <CommentThread sourceId={source.id} />
       </Card>
+
+      <Modal open={showEditModal} onClose={() => setShowEditModal(false)} title="Edit Source">
+        <SourceForm source={source} onClose={() => setShowEditModal(false)} />
+      </Modal>
     </div>
   );
 }

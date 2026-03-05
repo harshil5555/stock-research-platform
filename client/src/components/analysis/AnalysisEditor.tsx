@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
-import { useUpsertAnalysis } from '@/hooks/useStocks';
+import { useUpsertAnalysis, useMyAnalysis } from '@/hooks/useStocks';
 
 interface AnalysisEditorProps {
   stockId: string;
@@ -10,11 +10,22 @@ interface AnalysisEditorProps {
 }
 
 export default function AnalysisEditor({ stockId, onClose }: AnalysisEditorProps) {
-  const [thesis, setThesis] = useState('');
-  const [bullCase, setBullCase] = useState('');
-  const [bearCase, setBearCase] = useState('');
-  const [notes, setNotes] = useState('');
-  const [targetPrice, setTargetPrice] = useState('');
+  const { data: existing } = useMyAnalysis(stockId);
+  const [thesis, setThesis] = useState(existing?.thesis ?? '');
+  const [bullCase, setBullCase] = useState(existing?.bullCase ?? '');
+  const [bearCase, setBearCase] = useState(existing?.bearCase ?? '');
+  const [notes, setNotes] = useState(existing?.notes ?? '');
+  const [targetPrice, setTargetPrice] = useState(existing?.targetPrice ?? '');
+
+  useEffect(() => {
+    if (existing) {
+      setThesis(existing.thesis ?? '');
+      setBullCase(existing.bullCase ?? '');
+      setBearCase(existing.bearCase ?? '');
+      setNotes(existing.notes ?? '');
+      setTargetPrice(existing.targetPrice ?? '');
+    }
+  }, [existing]);
   const upsertAnalysis = useUpsertAnalysis();
 
   const handleSubmit = (e: React.FormEvent) => {

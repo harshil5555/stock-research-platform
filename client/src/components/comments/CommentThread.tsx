@@ -10,6 +10,7 @@ import type { Comment } from '@/types';
 interface CommentThreadProps {
   sourceId?: string;
   stockId?: string;
+  todoId?: string;
 }
 
 function CommentItem({ comment, entityType, entityId, depth = 0 }: {
@@ -75,9 +76,9 @@ function CommentItem({ comment, entityType, entityId, depth = 0 }: {
   );
 }
 
-export default function CommentThread({ sourceId, stockId }: CommentThreadProps) {
-  const entityType = sourceId ? 'source' as const : 'stock' as const;
-  const entityId = (sourceId || stockId) ?? '';
+export default function CommentThread({ sourceId, stockId, todoId }: CommentThreadProps) {
+  const entityType = sourceId ? 'source' as const : stockId ? 'stock' as const : 'todo' as const;
+  const entityId = (sourceId || stockId || todoId) ?? '';
   const { data: comments, isLoading } = useComments({ entityType, entityId });
 
   return (

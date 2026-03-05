@@ -2,7 +2,10 @@ import { useCallback, useState } from 'react';
 import { Upload, X, File } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useUploadAttachment } from '@/hooks/useSources';
+import { useUIStore } from '@/stores/uiStore';
 import { cn } from '@/lib/utils';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 interface FileUploadProps {
   sourceId: string;
@@ -13,16 +16,24 @@ export default function FileUpload({ sourceId }: FileUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const upload = useUploadAttachment();
 
+  const validateAndSetFile = useCallback((file: globalThis.File) => {
+    if (file.size > MAX_FILE_SIZE) {
+      useUIStore.getState().addToast({ type: 'error', message: 'File exceeds 10MB limit' });
+      return;
+    }
+    setSelectedFile(file);
+  }, []);
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files[0];
-    if (file) setSelectedFile(file);
-  }, []);
+    if (file) validateAndSetFile(file);
+  }, [validateAndSetFile]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setSelectedFile(file);
+    if (file) validateAndSetFile(file);
   };
 
   const handleUpload = () => {

@@ -12,7 +12,7 @@ import {
 import { authMiddleware } from "../middleware/auth";
 import { validate } from "../middleware/validate";
 import { createSourceSchema, updateSourceSchema } from "../validators/sources";
-import { AuthRequest, param, escapeLike, handleRouteError } from "../types";
+import { AuthRequest, param, escapeLike, handleRouteError, UUID_RE } from "../types";
 import { broadcast } from "../ws/broadcast";
 
 const router = Router();
@@ -33,16 +33,18 @@ router.get(
   authMiddleware,
   async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const { search, sourceType } = req.query;
+      const { search, sourceType, type: typeAlias } = req.query;
 
       const conditions: SQL[] = [];
       if (search && typeof search === "string") {
         conditions.push(ilike(sources.title, `%${escapeLike(search)}%`));
       }
-      if (sourceType && typeof sourceType === "string") {
-        if (validSourceTypes.includes(sourceType as SourceType)) {
+      // Accept both "sourceType" and "type" as query param names
+      const typeParam = (sourceType || typeAlias) as string | undefined;
+      if (typeParam && typeof typeParam === "string") {
+        if (validSourceTypes.includes(typeParam as SourceType)) {
           conditions.push(
-            eq(sources.sourceType, sourceType as SourceType)
+            eq(sources.sourceType, typeParam as SourceType)
           );
         }
       }
@@ -81,33 +83,31 @@ router.get(
         return;
       }
 
-      // Get linked stocks
-      const linkedStocks = await db
-        .select({
-          id: stocks.id,
-          ticker: stocks.ticker,
-          companyName: stocks.companyName,
-        })
-        .from(sourceStocks)
-        .innerJoin(stocks, eq(sourceStocks.stockId, stocks.id))
-        .where(eq(sourceStocks.sourceId, source.id));
-
-      // Get linked todos
-      const linkedTodos = await db
-        .select({
-          id: todos.id,
-          title: todos.title,
-          status: todos.status,
-        })
-        .from(sourceTodos)
-        .innerJoin(todos, eq(sourceTodos.todoId, todos.id))
-        .where(eq(sourceTodos.sourceId, source.id));
-
-      // Get attachments
-      const linkedAttachments = await db
-        .select()
-        .from(attachments)
-        .where(eq(attachments.sourceId, source.id));
+      // Fetch linked stocks, todos, and attachments in parallel
+      const [linkedStocks, linkedTodos, linkedAttachments] = await Promise.all([
+        db
+          .select({
+            id: stocks.id,
+            ticker: stocks.ticker,
+            companyName: stocks.companyName,
+          })
+          .from(sourceStocks)
+          .innerJoin(stocks, eq(sourceStocks.stockId, stocks.id))
+          .where(eq(sourceStocks.sourceId, source.id)),
+        db
+          .select({
+            id: todos.id,
+            title: todos.title,
+            status: todos.status,
+          })
+          .from(sourceTodos)
+          .innerJoin(todos, eq(sourceTodos.todoId, todos.id))
+          .where(eq(sourceTodos.sourceId, source.id)),
+        db
+          .select()
+          .from(attachments)
+          .where(eq(attachments.sourceId, source.id)),
+      ]);
 
       res.json({
         ...source,
@@ -248,6 +248,153 @@ router.put(
     }
   }
 );
+
+// Shared handlers for link/unlink operations
+async function handleLinkStock(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const id = param(req, "id");
+    const stockId = req.params.stockId
+      ? param(req, "stockId")
+      : req.body?.stockId;
+
+    if (!stockId || !UUID_RE.test(stockId)) {
+      res.status(400).json({ error: "Valid stockId is required" });
+      return;
+    }
+
+    const [source] = await db
+      .select({ id: sources.id })
+      .from(sources)
+      .where(eq(sources.id, id))
+      .limit(1);
+    if (!source) {
+      res.status(404).json({ error: "Source not found" });
+      return;
+    }
+
+    const [stock] = await db
+      .select({ id: stocks.id })
+      .from(stocks)
+      .where(eq(stocks.id, stockId))
+      .limit(1);
+    if (!stock) {
+      res.status(404).json({ error: "Stock not found" });
+      return;
+    }
+
+    await db
+      .insert(sourceStocks)
+      .values({ sourceId: id, stockId })
+      .onConflictDoNothing();
+
+    res.status(201).json({ message: "Stock linked" });
+  } catch (err) {
+    if (handleRouteError(err, res)) return;
+    console.error("Link stock error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+async function handleUnlinkStock(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const id = param(req, "id");
+    const stockId = param(req, "stockId");
+
+    await db
+      .delete(sourceStocks)
+      .where(
+        and(
+          eq(sourceStocks.sourceId, id),
+          eq(sourceStocks.stockId, stockId)
+        )
+      );
+
+    res.json({ message: "Stock unlinked" });
+  } catch (err) {
+    if (handleRouteError(err, res)) return;
+    console.error("Unlink stock error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+async function handleLinkTodo(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const id = param(req, "id");
+    const todoId = req.params.todoId
+      ? param(req, "todoId")
+      : req.body?.todoId;
+
+    if (!todoId || !UUID_RE.test(todoId)) {
+      res.status(400).json({ error: "Valid todoId is required" });
+      return;
+    }
+
+    const [source] = await db
+      .select({ id: sources.id })
+      .from(sources)
+      .where(eq(sources.id, id))
+      .limit(1);
+    if (!source) {
+      res.status(404).json({ error: "Source not found" });
+      return;
+    }
+
+    const [todo] = await db
+      .select({ id: todos.id })
+      .from(todos)
+      .where(eq(todos.id, todoId))
+      .limit(1);
+    if (!todo) {
+      res.status(404).json({ error: "Todo not found" });
+      return;
+    }
+
+    await db
+      .insert(sourceTodos)
+      .values({ sourceId: id, todoId })
+      .onConflictDoNothing();
+
+    res.status(201).json({ message: "Todo linked" });
+  } catch (err) {
+    if (handleRouteError(err, res)) return;
+    console.error("Link todo error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+async function handleUnlinkTodo(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const id = param(req, "id");
+    const todoId = param(req, "todoId");
+
+    await db
+      .delete(sourceTodos)
+      .where(
+        and(
+          eq(sourceTodos.sourceId, id),
+          eq(sourceTodos.todoId, todoId)
+        )
+      );
+
+    res.json({ message: "Todo unlinked" });
+  } catch (err) {
+    if (handleRouteError(err, res)) return;
+    console.error("Unlink todo error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+// Link/unlink stock routes (support both URL patterns)
+router.post("/:id/stocks/:stockId", authMiddleware, handleLinkStock);
+router.post("/:id/link-stock", authMiddleware, handleLinkStock);
+router.delete("/:id/stocks/:stockId", authMiddleware, handleUnlinkStock);
+router.delete("/:id/link-stock/:stockId", authMiddleware, handleUnlinkStock);
+
+// Link/unlink todo routes (support both URL patterns)
+router.post("/:id/todos/:todoId", authMiddleware, handleLinkTodo);
+router.post("/:id/link-todo", authMiddleware, handleLinkTodo);
+router.delete("/:id/todos/:todoId", authMiddleware, handleUnlinkTodo);
+router.delete("/:id/link-todo/:todoId", authMiddleware, handleUnlinkTodo);
 
 // DELETE /api/sources/:id
 router.delete(

@@ -16,6 +16,7 @@ export default function TodoForm({ onClose, todo }: TodoFormProps) {
   const [title, setTitle] = useState(todo?.title ?? '');
   const [description, setDescription] = useState(todo?.description ?? '');
   const [priority, setPriority] = useState<string>(String(todo?.priority ?? 5));
+  const [dueDate, setDueDate] = useState(todo?.dueDate ? todo.dueDate.slice(0, 10) : '');
   const createTodo = useCreateTodo();
   const updateTodo = useUpdateTodo();
 
@@ -23,8 +24,9 @@ export default function TodoForm({ onClose, todo }: TodoFormProps) {
     e.preventDefault();
     const data = {
       title,
-      description: description || undefined,
+      description: description || null,
       priority: parseInt(priority, 10),
+      dueDate: dueDate ? new Date(dueDate + 'T12:00:00').toISOString() : null,
     };
 
     if (isEdit) {
@@ -69,6 +71,12 @@ export default function TodoForm({ onClose, todo }: TodoFormProps) {
           { value: '3', label: '3 - Low' },
           { value: '0', label: '0 - None' },
         ]}
+      />
+      <Input
+        label="Due Date"
+        type="date"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
       />
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="secondary" onClick={onClose}>

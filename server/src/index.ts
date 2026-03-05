@@ -2,6 +2,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import path from "path";
 import fs from "fs";
@@ -12,7 +13,9 @@ import { initializeSocket } from "./ws";
 import { pool } from "./db";
 
 const app = express();
-app.set('trust proxy', 1);
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 const httpServer = createServer(app);
 
 // Initialize Socket.io
@@ -31,9 +34,10 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "blob:"],
-        connectSrc: ["'self'", "ws:", "wss:"],
+        connectSrc: ["'self'", "ws:", "wss:", "https://fonts.googleapis.com"],
       },
     },
   })
@@ -48,6 +52,9 @@ app.use(
   })
 );
 app.use(globalLimiter);
+
+// Cookie parsing
+app.use(cookieParser());
 
 // Body parsing
 app.use(express.json({ limit: "1mb" }));

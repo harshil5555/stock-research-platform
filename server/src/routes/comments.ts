@@ -1,7 +1,7 @@
 import { Router, Response } from "express";
-import { eq, and, desc, isNull } from "drizzle-orm";
+import { eq, and, desc, isNull, isNotNull } from "drizzle-orm";
 import { db } from "../db";
-import { comments, users } from "../db/schema";
+import { comments, users, sources, stocks, todos } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { validate } from "../middleware/validate";
 import {
@@ -22,12 +22,27 @@ router.get(
   authMiddleware,
   async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const { entityType, entityId } = req.query;
+      let { entityType, entityId } = req.query as { entityType?: string; entityId?: string };
+      const { stockId, sourceId, todoId } = req.query;
+
+      // Support convenience query params: stockId, sourceId, todoId
+      if (!entityType || !entityId) {
+        if (stockId && typeof stockId === "string" && UUID_RE.test(stockId)) {
+          entityType = "stock";
+          entityId = stockId;
+        } else if (sourceId && typeof sourceId === "string" && UUID_RE.test(sourceId)) {
+          entityType = "source";
+          entityId = sourceId;
+        } else if (todoId && typeof todoId === "string" && UUID_RE.test(todoId)) {
+          entityType = "todo";
+          entityId = todoId;
+        }
+      }
 
       if (!entityType || !entityId) {
         res
           .status(400)
-          .json({ error: "entityType and entityId are required" });
+          .json({ error: "entityType and entityId are required (or use stockId, sourceId, or todoId)" });
         return;
       }
 
@@ -69,7 +84,7 @@ router.get(
         )
         .orderBy(desc(comments.createdAt));
 
-      // Get all replies for these comments
+      // Get all replies for these comments (only actual replies, not top-level)
       const allReplies = await db
         .select({
           id: comments.id,
@@ -88,7 +103,8 @@ router.get(
         .where(
           and(
             eq(comments.entityType, entityType as EntityType),
-            eq(comments.entityId, entityId)
+            eq(comments.entityId, entityId),
+            isNotNull(comments.parentId)
           )
         )
         .orderBy(comments.createdAt);
@@ -123,6 +139,26 @@ router.post(
   validate(createCommentSchema),
   async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      // Validate that the referenced entity exists
+      const entityTable = {
+        source: sources,
+        stock: stocks,
+        todo: todos,
+      }[req.body.entityType as EntityType];
+
+      if (entityTable) {
+        const [entity] = await db
+          .select({ id: entityTable.id })
+          .from(entityTable)
+          .where(eq(entityTable.id, req.body.entityId))
+          .limit(1);
+
+        if (!entity) {
+          res.status(404).json({ error: `${req.body.entityType} not found` });
+          return;
+        }
+      }
+
       // Validate parentId if provided
       if (req.body.parentId) {
         const [parent] = await db
@@ -267,9 +303,11 @@ router.delete(
         return;
       }
 
-      // Delete child replies first, then the comment itself
-      await db.delete(comments).where(eq(comments.parentId, id));
-      await db.delete(comments).where(eq(comments.id, id));
+      // Delete child replies first, then the comment itself (in a transaction)
+      await db.transaction(async (tx) => {
+        await tx.delete(comments).where(eq(comments.parentId, id));
+        await tx.delete(comments).where(eq(comments.id, id));
+      });
 
       broadcast(
         "comment",

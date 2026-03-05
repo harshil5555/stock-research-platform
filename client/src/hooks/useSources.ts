@@ -35,6 +35,7 @@ export function useCreateSource() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['sources'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
       addToast({ type: 'success', message: 'Source created' });
     },
     onError: () => addToast({ type: 'error', message: 'Failed to create source' }),
@@ -50,8 +51,9 @@ export function useUpdateSource() {
       const res = await api.put<Source>(`/sources/${id}`, data);
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['sources'] });
+      qc.invalidateQueries({ queryKey: ['sources', vars.id] });
       addToast({ type: 'success', message: 'Source updated' });
     },
     onError: () => addToast({ type: 'error', message: 'Failed to update source' }),
@@ -68,6 +70,7 @@ export function useDeleteSource() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['sources'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
       addToast({ type: 'success', message: 'Source deleted' });
     },
     onError: () => addToast({ type: 'error', message: 'Failed to delete source' }),

@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowUpDown } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Skeleton from '@/components/ui/Skeleton';
 import DecisionBadge from '@/components/decisions/DecisionBadge';
@@ -33,17 +32,9 @@ export default function DecisionsPage() {
                 <tr className="border-b border-[var(--border)]">
                   <th className="text-left text-xs font-medium text-[var(--text-secondary)] px-5 py-3">Ticker</th>
                   <th className="text-left text-xs font-medium text-[var(--text-secondary)] px-5 py-3">Company</th>
-                  <th className="text-left text-xs font-medium text-[var(--text-secondary)] px-5 py-3">
-                    <span className="inline-flex items-center gap-1">
-                      Status <ArrowUpDown size={12} />
-                    </span>
-                  </th>
+                  <th className="text-left text-xs font-medium text-[var(--text-secondary)] px-5 py-3">Status</th>
                   <th className="text-left text-xs font-medium text-[var(--text-secondary)] px-5 py-3">Sector</th>
-                  <th className="text-left text-xs font-medium text-[var(--text-secondary)] px-5 py-3">
-                    <span className="inline-flex items-center gap-1">
-                      Date <ArrowUpDown size={12} />
-                    </span>
-                  </th>
+                  <th className="text-left text-xs font-medium text-[var(--text-secondary)] px-5 py-3">Added</th>
                 </tr>
               </thead>
               <tbody>

@@ -15,10 +15,10 @@ const ENTITY_QUERY_KEYS: Record<string, string[]> = {
   todo: ["todos", "dashboard"],
   source: ["sources", "dashboard"],
   stock: ["stocks", "dashboard"],
-  comment: ["comments"],
-  analysis: ["analyses"],
-  decision: ["decisions"],
-  attachment: ["attachments"],
+  comment: ["comments", "dashboard"],
+  analysis: ["analyses", "dashboard"],
+  decision: ["decisions", "dashboard"],
+  attachment: ["attachments", "sources"],
 };
 
 export function useWebSocket(): void {

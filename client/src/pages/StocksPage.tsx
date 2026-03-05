@@ -58,6 +58,7 @@ export default function StocksPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or ticker..."
+            aria-label="Search stocks"
             className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
           />
         </div>

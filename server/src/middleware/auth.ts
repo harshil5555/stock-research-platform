@@ -24,7 +24,7 @@ export function authMiddleware(
   }
 }
 
-const DEFAULT_EXPIRY = "7d" as const;
+const DEFAULT_EXPIRY = "30m" as const;
 const VALID_EXPIRY_RE = /^\d+[smhd]$/;
 
 export function signToken(payload: AuthPayload): string {

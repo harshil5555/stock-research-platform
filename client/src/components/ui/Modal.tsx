@@ -14,11 +14,15 @@ interface ModalProps {
 export default function Modal({ open, onClose, title, children, className }: ModalProps) {
   useEffect(() => {
     if (!open) return;
+    document.body.style.overflow = 'hidden';
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [open, onClose]);
 
   return (
@@ -38,6 +42,8 @@ export default function Modal({ open, onClose, title, children, className }: Mod
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.15 }}
+            role="dialog"
+            aria-modal="true"
             className={cn(
               'relative bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xl p-6 max-w-lg w-full mx-4 max-h-[85vh] overflow-y-auto',
               className

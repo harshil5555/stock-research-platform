@@ -35,6 +35,7 @@ export function useCreateTodo() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['todos'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
       addToast({ type: 'success', message: 'Todo created' });
     },
     onError: () => addToast({ type: 'error', message: 'Failed to create todo' }),
@@ -84,6 +85,7 @@ export function useDeleteTodo() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['todos'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
       addToast({ type: 'success', message: 'Todo deleted' });
     },
     onError: () => addToast({ type: 'error', message: 'Failed to delete todo' }),

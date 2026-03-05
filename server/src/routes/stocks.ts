@@ -1,7 +1,7 @@
 import { Router, Response } from "express";
 import { eq, desc, ilike, and, or, SQL } from "drizzle-orm";
 import { db } from "../db";
-import { stocks } from "../db/schema";
+import { stocks, analyses, decisions, sourceStocks, sources } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { validate } from "../middleware/validate";
 import { createStockSchema, updateStockSchema } from "../validators/stocks";
@@ -85,7 +85,35 @@ router.get(
         return;
       }
 
-      res.json(stock);
+      // Include related data
+      const [stockAnalyses, stockDecisions, linkedSources] = await Promise.all([
+        db
+          .select()
+          .from(analyses)
+          .where(eq(analyses.stockId, id)),
+        db
+          .select()
+          .from(decisions)
+          .where(eq(decisions.stockId, id))
+          .orderBy(desc(decisions.createdAt)),
+        db
+          .select({
+            id: sources.id,
+            title: sources.title,
+            sourceType: sources.sourceType,
+            url: sources.url,
+          })
+          .from(sourceStocks)
+          .innerJoin(sources, eq(sourceStocks.sourceId, sources.id))
+          .where(eq(sourceStocks.stockId, id)),
+      ]);
+
+      res.json({
+        ...stock,
+        analyses: stockAnalyses,
+        decisions: stockDecisions,
+        sources: linkedSources,
+      });
     } catch (err) {
       if (handleRouteError(err, res)) return;
       console.error("Get stock error:", err);

@@ -23,10 +23,11 @@ jobs:
             git pull origin main
             cd /root
             docker compose up -d --build stock-app
+            docker exec stock-app node dist/db/migrate.js
             docker image prune -f --filter "until=24h"
             # Health check via docker exec
             for i in $(seq 1 30); do
-              docker exec stock-app wget -qO- http://localhost:3000/api/health && exit 0
+              docker exec stock-app node -e "const h=require('http');h.get('http://localhost:3000/api/health',r=>{let d='';r.on('data',c=>d+=c);r.on('end',()=>{console.log(d);process.exit(r.statusCode===200?0:1)})}).on('error',()=>process.exit(1))" && exit 0
               sleep 2
             done
             echo "Health check failed after 60s"
