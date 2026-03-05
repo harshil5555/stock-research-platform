@@ -1,0 +1,32 @@
+name: Deploy Stock Research Platform
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to production
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          timeout: 180s
+          command_timeout: 300s
+          script_stop: true
+          script: |
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}
+            git pull origin main
+            docker compose up -d --build stock-app
+            docker image prune -f --filter "label=com.docker.compose.project=stock-research-platform"
+            for i in $(seq 1 30); do
+              curl -sf http://localhost:3000/api/health && exit 0
+              sleep 2
+            done
+            echo "Health check failed after 60s"
+            exit 1

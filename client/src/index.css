@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --color-light-bg: #FAFAFA;
+  --color-light-surface: #FFFFFF;
+  --color-light-text: #1D1D1F;
+  --color-light-text-secondary: #6E6E73;
+  --color-light-border: #E5E5E7;
+  --color-light-hover: #F2F2F2;
+
+  --color-dark-bg: #000000;
+  --color-dark-surface: #1C1C1E;
+  --color-dark-text: #F5F5F7;
+  --color-dark-text-secondary: #A1A1A6;
+  --color-dark-border: #38383A;
+  --color-dark-hover: #2C2C2E;
+
+  --color-accent: #0071E3;
+  --color-accent-dark: #0A84FF;
+  --color-accent-hover: #0077ED;
+
+  --color-buy: #34C759;
+  --color-hold: #FF9500;
+  --color-sell: #FF3B30;
+  --color-watching: #5856D6;
+  --color-none: #8E8E93;
+
+  --color-priority-immediate: #FF3B30;
+  --color-priority-high: #FF9500;
+  --color-priority-medium: #FFCC00;
+  --color-priority-low: #34C759;
+}
+
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Light theme (default) */
+:root {
+  --bg: var(--color-light-bg);
+  --surface: var(--color-light-surface);
+  --text-primary: var(--color-light-text);
+  --text-secondary: var(--color-light-text-secondary);
+  --border: var(--color-light-border);
+  --hover: var(--color-light-hover);
+  --accent: var(--color-accent);
+  color-scheme: light;
+}
+
+/* Dark theme */
+.dark {
+  --bg: var(--color-dark-bg);
+  --surface: var(--color-dark-surface);
+  --text-primary: var(--color-dark-text);
+  --text-secondary: var(--color-dark-text-secondary);
+  --border: var(--color-dark-border);
+  --hover: var(--color-dark-hover);
+  --accent: var(--color-accent-dark);
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg);
+  color: var(--text-primary);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
