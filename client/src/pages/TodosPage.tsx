@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, LayoutGrid, List } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
-import Tabs from '@/components/ui/Tabs';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import TodoItem from '@/components/todos/TodoItem';
 import TodoForm from '@/components/todos/TodoForm';
@@ -17,11 +16,9 @@ export default function TodosPage() {
   const [editingTodo, setEditingTodo] = useState<Todo | undefined>();
   const [view, setView] = useState<'kanban' | 'list'>('kanban');
   const [statusFilter, setStatusFilter] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState('');
 
   const { data: todos, isLoading } = useTodos({
     status: statusFilter || undefined,
-    priority: priorityFilter || undefined,
   });
 
   return (
@@ -42,9 +39,7 @@ export default function TodosPage() {
       <div className="flex items-center justify-between gap-4">
         <TodoFilters
           status={statusFilter}
-          priority={priorityFilter}
           onStatusChange={setStatusFilter}
-          onPriorityChange={setPriorityFilter}
         />
         <div className="flex gap-1 p-1 bg-[var(--hover)] rounded-xl">
           <button

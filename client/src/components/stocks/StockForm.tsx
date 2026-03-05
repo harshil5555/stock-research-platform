@@ -10,10 +10,9 @@ interface StockFormProps {
 
 export default function StockForm({ onClose }: StockFormProps) {
   const [ticker, setTicker] = useState('');
-  const [name, setName] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [sector, setSector] = useState('');
-  const [description, setDescription] = useState('');
-  const [currentPrice, setCurrentPrice] = useState('');
+  const [notes, setNotes] = useState('');
   const createStock = useCreateStock();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -21,10 +20,9 @@ export default function StockForm({ onClose }: StockFormProps) {
     createStock.mutate(
       {
         ticker: ticker.toUpperCase(),
-        name,
+        companyName,
         sector: sector || null,
-        description: description || null,
-        currentPrice: currentPrice ? parseFloat(currentPrice) : null,
+        notes: notes || null,
       },
       { onSuccess: onClose }
     );
@@ -41,32 +39,24 @@ export default function StockForm({ onClose }: StockFormProps) {
           required
         />
         <Input
-          label="Current Price"
-          value={currentPrice}
-          onChange={(e) => setCurrentPrice(e.target.value)}
-          placeholder="0.00"
-          type="number"
-          step="0.01"
+          label="Sector"
+          value={sector}
+          onChange={(e) => setSector(e.target.value)}
+          placeholder="Technology"
         />
       </div>
       <Input
         label="Company Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        value={companyName}
+        onChange={(e) => setCompanyName(e.target.value)}
         placeholder="Apple Inc."
         required
       />
-      <Input
-        label="Sector"
-        value={sector}
-        onChange={(e) => setSector(e.target.value)}
-        placeholder="Technology"
-      />
       <Textarea
-        label="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Company description..."
+        label="Notes"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Notes about this stock..."
         rows={3}
       />
       <div className="flex justify-end gap-3 pt-2">

@@ -9,16 +9,13 @@ import type { Todo } from '@/types';
 interface TodoFormProps {
   onClose: () => void;
   todo?: Todo;
-  defaultStockId?: string;
-  defaultSourceId?: string;
 }
 
-export default function TodoForm({ onClose, todo, defaultStockId, defaultSourceId }: TodoFormProps) {
+export default function TodoForm({ onClose, todo }: TodoFormProps) {
   const isEdit = !!todo;
   const [title, setTitle] = useState(todo?.title ?? '');
   const [description, setDescription] = useState(todo?.description ?? '');
-  const [priority, setPriority] = useState<string>(todo?.priority ?? 'medium');
-  const [dueDate, setDueDate] = useState(todo?.dueDate?.split('T')[0] ?? '');
+  const [priority, setPriority] = useState<string>(String(todo?.priority ?? 5));
   const createTodo = useCreateTodo();
   const updateTodo = useUpdateTodo();
 
@@ -26,9 +23,8 @@ export default function TodoForm({ onClose, todo, defaultStockId, defaultSourceI
     e.preventDefault();
     const data = {
       title,
-      description: description || null,
-      priority: priority as Todo['priority'],
-      dueDate: dueDate || null,
+      description: description || undefined,
+      priority: parseInt(priority, 10),
     };
 
     if (isEdit) {
@@ -37,9 +33,7 @@ export default function TodoForm({ onClose, todo, defaultStockId, defaultSourceI
       createTodo.mutate(
         {
           ...data,
-          stockId: defaultStockId || null,
-          sourceId: defaultSourceId || null,
-          status: 'todo',
+          status: 'pending',
         },
         { onSuccess: onClose }
       );
@@ -64,25 +58,18 @@ export default function TodoForm({ onClose, todo, defaultStockId, defaultSourceI
         placeholder="Add details..."
         rows={3}
       />
-      <div className="grid grid-cols-2 gap-4">
-        <Select
-          label="Priority"
-          value={priority}
-          onChange={(e) => setPriority(e.target.value)}
-          options={[
-            { value: 'immediate', label: 'Immediate' },
-            { value: 'high', label: 'High' },
-            { value: 'medium', label: 'Medium' },
-            { value: 'low', label: 'Low' },
-          ]}
-        />
-        <Input
-          label="Due Date"
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-        />
-      </div>
+      <Select
+        label="Priority (0=lowest, 10=highest)"
+        value={priority}
+        onChange={(e) => setPriority(e.target.value)}
+        options={[
+          { value: '10', label: '10 - Critical' },
+          { value: '8', label: '8 - High' },
+          { value: '5', label: '5 - Medium' },
+          { value: '3', label: '3 - Low' },
+          { value: '0', label: '0 - None' },
+        ]}
+      />
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="secondary" onClick={onClose}>
           Cancel

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { TrendingUp } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
-import { decisionColors, formatRelative } from '@/lib/utils';
+import { decisionStatusColors, formatRelative } from '@/lib/utils';
 import type { Stock } from '@/types';
 
 interface StockCardProps {
@@ -11,7 +11,6 @@ interface StockCardProps {
 
 export default function StockCard({ stock }: StockCardProps) {
   const navigate = useNavigate();
-  const latestDecision = stock.decisions?.[0];
 
   return (
     <Card hover onClick={() => navigate(`/stocks/${stock.id}`)}>
@@ -23,23 +22,16 @@ export default function StockCard({ stock }: StockCardProps) {
           <div className="flex items-center gap-2 mb-1">
             <span className="text-sm font-bold text-[var(--accent)]">{stock.ticker}</span>
             <h3 className="text-sm font-medium text-[var(--text-primary)] truncate">
-              {stock.name}
+              {stock.companyName}
             </h3>
           </div>
           {stock.sector && (
             <p className="text-xs text-[var(--text-secondary)] mb-2">{stock.sector}</p>
           )}
           <div className="flex items-center gap-2">
-            {stock.currentPrice && (
-              <span className="text-sm font-semibold text-[var(--text-primary)]">
-                ${stock.currentPrice.toFixed(2)}
-              </span>
-            )}
-            {latestDecision && (
-              <Badge variant={decisionColors[latestDecision.decision]}>
-                {latestDecision.decision}
-              </Badge>
-            )}
+            <Badge variant={decisionStatusColors[stock.decisionStatus]}>
+              {stock.decisionStatus}
+            </Badge>
             <span className="text-xs text-[var(--text-secondary)] ml-auto">
               {formatRelative(stock.createdAt)}
             </span>

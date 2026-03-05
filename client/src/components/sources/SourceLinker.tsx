@@ -32,7 +32,7 @@ export default function SourceLinker({ sourceId, linkedStockIds }: SourceLinkerP
           onChange={(e) => setSelectedStock(e.target.value)}
           options={[
             { value: '', label: 'Select a stock...' },
-            ...available.map((s) => ({ value: s.id, label: `${s.ticker} - ${s.name}` })),
+            ...available.map((s) => ({ value: s.id, label: `${s.ticker} - ${s.companyName}` })),
           ]}
         />
       </div>
@@ -41,7 +41,8 @@ export default function SourceLinker({ sourceId, linkedStockIds }: SourceLinkerP
         disabled={!selectedStock}
         loading={linkStock.isPending}
         onClick={() => {
-          linkStock.mutate({ sourceId, stockId: selectedStock }, {
+          const newStockIds = [...linkedStockIds, selectedStock];
+          linkStock.mutate({ sourceId, stockIds: newStockIds }, {
             onSuccess: () => setSelectedStock(''),
           });
         }}

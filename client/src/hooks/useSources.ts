@@ -3,7 +3,7 @@ import api from '@/lib/api';
 import { useUIStore } from '@/stores/uiStore';
 import type { Source } from '@/types';
 
-export function useSources(params?: { type?: string; search?: string }) {
+export function useSources(params?: { sourceType?: string; search?: string }) {
   return useQuery({
     queryKey: ['sources', params],
     queryFn: async () => {
@@ -29,7 +29,7 @@ export function useCreateSource() {
   const addToast = useUIStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: async (data: Partial<Source>) => {
+    mutationFn: async (data: Partial<Source> & { stockIds?: string[]; todoIds?: string[] }) => {
       const res = await api.post<Source>('/sources', data);
       return res.data;
     },
@@ -46,8 +46,8 @@ export function useUpdateSource() {
   const addToast = useUIStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: async ({ id, ...data }: Partial<Source> & { id: string }) => {
-      const res = await api.patch<Source>(`/sources/${id}`, data);
+    mutationFn: async ({ id, ...data }: Partial<Source> & { id: string; stockIds?: string[]; todoIds?: string[] }) => {
+      const res = await api.put<Source>(`/sources/${id}`, data);
       return res.data;
     },
     onSuccess: () => {
@@ -100,8 +100,9 @@ export function useLinkStock() {
   const addToast = useUIStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: async ({ sourceId, stockId }: { sourceId: string; stockId: string }) => {
-      await api.post(`/sources/${sourceId}/stocks`, { stockId });
+    mutationFn: async ({ sourceId, stockIds }: { sourceId: string; stockIds: string[] }) => {
+      const res = await api.put(`/sources/${sourceId}`, { stockIds });
+      return res.data;
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['sources', vars.sourceId] });
@@ -116,8 +117,9 @@ export function useUnlinkStock() {
   const addToast = useUIStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: async ({ sourceId, stockId }: { sourceId: string; stockId: string }) => {
-      await api.delete(`/sources/${sourceId}/stocks/${stockId}`);
+    mutationFn: async ({ sourceId, stockIds }: { sourceId: string; stockIds: string[] }) => {
+      const res = await api.put(`/sources/${sourceId}`, { stockIds });
+      return res.data;
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['sources', vars.sourceId] });

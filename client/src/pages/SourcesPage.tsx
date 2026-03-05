@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Search } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Modal from '@/components/ui/Modal';
 import { CardSkeleton } from '@/components/ui/Skeleton';
@@ -27,7 +26,7 @@ export default function SourcesPage() {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search);
   const { data: sources, isLoading } = useSources({
-    type: typeFilter || undefined,
+    sourceType: typeFilter || undefined,
     search: debouncedSearch || undefined,
   });
 
@@ -63,9 +62,9 @@ export default function SourcesPage() {
             { value: '', label: 'All Types' },
             { value: 'article', label: 'Article' },
             { value: 'report', label: 'Report' },
-            { value: 'filing', label: 'Filing' },
-            { value: 'news', label: 'News' },
-            { value: 'analysis', label: 'Analysis' },
+            { value: 'video', label: 'Video' },
+            { value: 'podcast', label: 'Podcast' },
+            { value: 'tweet', label: 'Tweet' },
             { value: 'other', label: 'Other' },
           ]}
         />

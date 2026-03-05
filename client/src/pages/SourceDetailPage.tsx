@@ -18,12 +18,11 @@ import SourceLinker from '@/components/sources/SourceLinker';
 import CommentThread from '@/components/comments/CommentThread';
 import api from '@/lib/api';
 import { useSource, useUnlinkStock } from '@/hooks/useSources';
-import { useTodos } from '@/hooks/useTodos';
 import { useUIStore } from '@/stores/uiStore';
-import { formatDate, sourceTypeLabels, priorityColors } from '@/lib/utils';
+import { formatDate, sourceTypeLabels } from '@/lib/utils';
 
-function downloadAttachment(sourceId: string, attachmentId: string, filename: string) {
-  api.get(`/sources/${sourceId}/attachments/${attachmentId}`, { responseType: 'blob' })
+function downloadAttachment(attachmentId: string, filename: string) {
+  api.get(`/attachments/${attachmentId}/download`, { responseType: 'blob' })
     .then((res) => {
       const url = URL.createObjectURL(res.data);
       const a = document.createElement('a');
@@ -40,7 +39,6 @@ function downloadAttachment(sourceId: string, attachmentId: string, filename: st
 export default function SourceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: source, isLoading } = useSource(id ?? '');
-  const { data: linkedTodos } = useTodos({ sourceId: id });
   const unlinkStock = useUnlinkStock();
 
   if (isLoading) {
@@ -56,6 +54,8 @@ export default function SourceDetailPage() {
   if (!source) {
     return <p className="text-[var(--text-secondary)]">Source not found</p>;
   }
+
+  const currentStockIds = (source.stocks || []).map((s) => s.id);
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -79,7 +79,7 @@ export default function SourceDetailPage() {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-xl font-bold text-[var(--text-primary)]">{source.title}</h1>
-                <Badge>{sourceTypeLabels[source.type] || source.type}</Badge>
+                <Badge>{sourceTypeLabels[source.sourceType] || source.sourceType}</Badge>
                 {source.url && (
                   <a
                     href={source.url}
@@ -103,11 +103,11 @@ export default function SourceDetailPage() {
         </Card>
       </motion.div>
 
-      {source.content && (
+      {source.notes && (
         <Card>
-          <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Content</h2>
+          <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Notes</h2>
           <div className="text-sm text-[var(--text-primary)] whitespace-pre-wrap leading-relaxed">
-            {source.content}
+            {source.notes}
           </div>
         </Card>
       )}
@@ -127,10 +127,10 @@ export default function SourceDetailPage() {
                     {att.originalName}
                   </span>
                   <span className="text-xs text-[var(--text-secondary)]">
-                    {(att.size / 1024).toFixed(1)}KB
+                    {(att.sizeBytes / 1024).toFixed(1)}KB
                   </span>
                   <button
-                    onClick={() => downloadAttachment(source.id, att.id, att.originalName)}
+                    onClick={() => downloadAttachment(att.id, att.originalName)}
                     aria-label="Download attachment"
                     className="text-[var(--accent)] hover:text-[var(--accent)] transition-colors"
                   >
@@ -160,10 +160,13 @@ export default function SourceDetailPage() {
                     className="flex items-center gap-2 flex-1 min-w-0 hover:opacity-80 transition-opacity"
                   >
                     <span className="text-sm font-bold text-[var(--accent)]">{stock.ticker}</span>
-                    <span className="text-sm text-[var(--text-primary)] truncate">{stock.name}</span>
+                    <span className="text-sm text-[var(--text-primary)] truncate">{stock.companyName}</span>
                   </Link>
                   <button
-                    onClick={() => unlinkStock.mutate({ sourceId: source.id, stockId: stock.id })}
+                    onClick={() => {
+                      const remaining = currentStockIds.filter((sid) => sid !== stock.id);
+                      unlinkStock.mutate({ sourceId: source.id, stockIds: remaining });
+                    }}
                     aria-label={`Unlink ${stock.ticker}`}
                     className="p-1 rounded text-[var(--text-secondary)] hover:text-[var(--color-sell)] hover:bg-[var(--border)] opacity-0 group-hover:opacity-100 transition-all shrink-0"
                   >
@@ -175,22 +178,20 @@ export default function SourceDetailPage() {
           )}
           <SourceLinker
             sourceId={source.id}
-            linkedStockIds={(source.stocks || []).map((s) => s.id)}
+            linkedStockIds={currentStockIds}
           />
         </Card>
       </div>
 
-      <Card>
-        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-          <CheckSquare size={16} />
-          Linked Todos
-          {linkedTodos && linkedTodos.length > 0 && (
-            <span className="text-xs text-[var(--text-secondary)] font-normal">({linkedTodos.length})</span>
-          )}
-        </h2>
-        {linkedTodos && linkedTodos.length > 0 ? (
+      {source.todos && source.todos.length > 0 && (
+        <Card>
+          <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+            <CheckSquare size={16} />
+            Linked Todos
+            <span className="text-xs text-[var(--text-secondary)] font-normal">({source.todos.length})</span>
+          </h2>
           <div className="space-y-2">
-            {linkedTodos.map((todo) => (
+            {source.todos.map((todo) => (
               <div
                 key={todo.id}
                 className="flex items-center gap-3 p-3 rounded-lg bg-[var(--hover)]"
@@ -199,21 +200,14 @@ export default function SourceDetailPage() {
                 <span className={`text-sm text-[var(--text-primary)] flex-1 truncate ${todo.status === 'done' ? 'line-through opacity-60' : ''}`}>
                   {todo.title}
                 </span>
-                <Badge variant={priorityColors[todo.priority]} className="shrink-0">
-                  {todo.priority}
-                </Badge>
                 <span className="text-xs text-[var(--text-secondary)] capitalize shrink-0">
                   {todo.status.replace('_', ' ')}
                 </span>
               </div>
             ))}
           </div>
-        ) : (
-          <p className="text-xs text-[var(--text-secondary)] text-center py-4">
-            No linked todos
-          </p>
-        )}
-      </Card>
+        </Card>
+      )}
 
       <Card>
         <CommentThread sourceId={source.id} />

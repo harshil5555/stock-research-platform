@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import Button from '@/components/ui/Button';
 import Select from '@/components/ui/Select';
-import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import { useCreateDecision } from '@/hooks/useDecisions';
 import type { Decision } from '@/types';
@@ -12,10 +11,8 @@ interface DecisionFormProps {
 }
 
 export default function DecisionForm({ stockId, onClose }: DecisionFormProps) {
-  const [decision, setDecision] = useState('watching');
-  const [targetPrice, setTargetPrice] = useState('');
-  const [notes, setNotes] = useState('');
-  const [confidence, setConfidence] = useState('50');
+  const [status, setStatus] = useState<Decision['status']>('watching');
+  const [reasoning, setReasoning] = useState('');
   const createDecision = useCreateDecision();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -23,10 +20,8 @@ export default function DecisionForm({ stockId, onClose }: DecisionFormProps) {
     createDecision.mutate(
       {
         stockId,
-        decision: decision as Decision['decision'],
-        targetPrice: targetPrice ? parseFloat(targetPrice) : null,
-        notes: notes || null,
-        confidence: confidence ? parseInt(confidence) : null,
+        status,
+        reasoning: reasoning || null,
       },
       { onSuccess: onClose }
     );
@@ -35,40 +30,22 @@ export default function DecisionForm({ stockId, onClose }: DecisionFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <Select
-        label="Decision"
-        value={decision}
-        onChange={(e) => setDecision(e.target.value)}
+        label="Decision Status"
+        value={status}
+        onChange={(e) => setStatus(e.target.value as Decision['status'])}
         options={[
-          { value: 'buy', label: 'Buy' },
-          { value: 'sell', label: 'Sell' },
-          { value: 'hold', label: 'Hold' },
+          { value: 'researching', label: 'Researching' },
+          { value: 'considering', label: 'Considering' },
+          { value: 'bought', label: 'Bought' },
+          { value: 'passed', label: 'Passed' },
+          { value: 'sold', label: 'Sold' },
           { value: 'watching', label: 'Watching' },
-          { value: 'none', label: 'None' },
         ]}
       />
-      <div className="grid grid-cols-2 gap-4">
-        <Input
-          label="Target Price"
-          value={targetPrice}
-          onChange={(e) => setTargetPrice(e.target.value)}
-          placeholder="0.00"
-          type="number"
-          step="0.01"
-        />
-        <Input
-          label="Confidence (%)"
-          value={confidence}
-          onChange={(e) => setConfidence(e.target.value)}
-          placeholder="0-100"
-          type="number"
-          min="0"
-          max="100"
-        />
-      </div>
       <Textarea
-        label="Notes"
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
+        label="Reasoning"
+        value={reasoning}
+        onChange={(e) => setReasoning(e.target.value)}
         placeholder="Reasoning for this decision..."
         rows={4}
       />

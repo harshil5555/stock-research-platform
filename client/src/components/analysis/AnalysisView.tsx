@@ -30,21 +30,42 @@ export default function AnalysisView({ analyses }: AnalysisViewProps) {
           <Card>
             <div className="flex items-center gap-2 mb-3">
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-                {analysis.title}
+                Analysis
               </h3>
+              {analysis.targetPrice && (
+                <span className="text-xs text-[var(--text-secondary)]">
+                  Target: {analysis.targetPrice}
+                </span>
+              )}
               <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)] ml-auto">
                 <Clock size={12} />
                 {formatRelative(analysis.createdAt)}
               </div>
             </div>
-            {analysis.creator && (
-              <p className="text-xs text-[var(--text-secondary)] mb-3">
-                By {analysis.creator.displayName}
-              </p>
+            {analysis.thesis && (
+              <div className="mb-3">
+                <h4 className="text-xs font-medium text-[var(--text-secondary)] mb-1">Thesis</h4>
+                <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{analysis.thesis}</p>
+              </div>
             )}
-            <div className="text-sm text-[var(--text-primary)] whitespace-pre-wrap leading-relaxed">
-              {analysis.content}
-            </div>
+            {analysis.bullCase && (
+              <div className="mb-3">
+                <h4 className="text-xs font-medium text-[var(--text-secondary)] mb-1">Bull Case</h4>
+                <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{analysis.bullCase}</p>
+              </div>
+            )}
+            {analysis.bearCase && (
+              <div className="mb-3">
+                <h4 className="text-xs font-medium text-[var(--text-secondary)] mb-1">Bear Case</h4>
+                <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{analysis.bearCase}</p>
+              </div>
+            )}
+            {analysis.notes && (
+              <div>
+                <h4 className="text-xs font-medium text-[var(--text-secondary)] mb-1">Notes</h4>
+                <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{analysis.notes}</p>
+              </div>
+            )}
           </Card>
         </motion.div>
       ))}

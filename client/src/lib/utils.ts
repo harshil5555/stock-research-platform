@@ -26,26 +26,28 @@ export function formatRelative(date: string) {
   return formatDate(date);
 }
 
-export const priorityColors: Record<string, string> = {
-  immediate: 'bg-[var(--color-priority-immediate)] text-white',
-  high: 'bg-[var(--color-priority-high)] text-white',
-  medium: 'bg-[var(--color-priority-medium)] text-[#1D1D1F]',
-  low: 'bg-[var(--color-priority-low)] text-white',
-};
+export function priorityLabel(priority: number): string {
+  if (priority >= 9) return 'Critical';
+  if (priority >= 7) return 'High';
+  if (priority >= 4) return 'Medium';
+  if (priority >= 1) return 'Low';
+  return 'None';
+}
 
-export const decisionColors: Record<string, string> = {
-  buy: 'bg-[var(--color-buy)] text-white',
-  sell: 'bg-[var(--color-sell)] text-white',
-  hold: 'bg-[var(--color-hold)] text-white',
+export const decisionStatusColors: Record<string, string> = {
+  researching: 'bg-[var(--color-watching)] text-white',
+  considering: 'bg-[var(--color-hold)] text-white',
+  bought: 'bg-[var(--color-buy)] text-white',
+  passed: 'bg-[var(--color-none)] text-white',
+  sold: 'bg-[var(--color-sell)] text-white',
   watching: 'bg-[var(--color-watching)] text-white',
-  none: 'bg-[var(--color-none)] text-white',
 };
 
 export const sourceTypeLabels: Record<string, string> = {
   article: 'Article',
   report: 'Report',
-  filing: 'Filing',
-  news: 'News',
-  analysis: 'Analysis',
+  video: 'Video',
+  podcast: 'Podcast',
+  tweet: 'Tweet',
   other: 'Other',
 };

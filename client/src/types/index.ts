@@ -13,16 +13,10 @@ export interface Todo {
   id: string;
   title: string;
   description: string | null;
-  status: 'todo' | 'in_progress' | 'done';
-  priority: 'immediate' | 'high' | 'medium' | 'low';
-  dueDate: string | null;
-  sourceId: string | null;
-  stockId: string | null;
-  assigneeId: string | null;
+  status: 'pending' | 'in_progress' | 'done';
+  priority: number;
+  assignedTo: string | null;
   createdBy: string;
-  source?: Source;
-  stock?: Stock;
-  assignee?: User;
   createdAt: string;
   updatedAt: string;
 }
@@ -31,38 +25,49 @@ export interface Source {
   id: string;
   title: string;
   url: string | null;
-  type: 'article' | 'report' | 'filing' | 'news' | 'analysis' | 'other';
+  sourceType: 'article' | 'video' | 'podcast' | 'report' | 'tweet' | 'other';
   summary: string | null;
-  content: string | null;
+  notes: string | null;
   createdBy: string;
   attachments?: Attachment[];
-  stocks?: Stock[];
-  todos?: Todo[];
+  stocks?: LinkedStock[];
+  todos?: LinkedTodo[];
   comments?: Comment[];
   createdAt: string;
   updatedAt: string;
 }
 
+export interface LinkedStock {
+  id: string;
+  ticker: string;
+  companyName: string;
+}
+
+export interface LinkedTodo {
+  id: string;
+  title: string;
+  status: string;
+}
+
 export interface Attachment {
   id: string;
   sourceId: string;
-  filename: string;
   originalName: string;
+  storedName: string;
   mimeType: string;
-  size: number;
+  sizeBytes: number;
+  uploadedBy: string;
   createdAt: string;
 }
 
 export interface Stock {
   id: string;
   ticker: string;
-  name: string;
+  companyName: string;
   sector: string | null;
-  description: string | null;
-  currentPrice: number | null;
+  notes: string | null;
+  decisionStatus: 'researching' | 'considering' | 'bought' | 'passed' | 'sold' | 'watching';
   createdBy: string;
-  sources?: Source[];
-  decisions?: Decision[];
   createdAt: string;
   updatedAt: string;
 }
@@ -70,25 +75,21 @@ export interface Stock {
 export interface Decision {
   id: string;
   stockId: string;
-  stock?: Stock;
-  decision: 'buy' | 'sell' | 'hold' | 'watching' | 'none';
-  targetPrice: number | null;
-  notes: string | null;
-  confidence: number | null;
-  createdBy: string;
-  creator?: User;
+  userId: string;
+  status: 'researching' | 'considering' | 'bought' | 'passed' | 'sold' | 'watching';
+  reasoning: string | null;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface Comment {
   id: string;
-  sourceId: string | null;
-  stockId: string | null;
+  entityType: 'source' | 'stock' | 'todo';
+  entityId: string;
   parentId: string | null;
-  content: string;
+  body: string;
   createdBy: string;
-  creator?: User;
+  authorName: string;
+  authorUsername: string;
   replies?: Comment[];
   createdAt: string;
   updatedAt: string;
@@ -97,10 +98,12 @@ export interface Comment {
 export interface Analysis {
   id: string;
   stockId: string;
-  title: string;
-  content: string;
-  createdBy: string;
-  creator?: User;
+  userId: string;
+  thesis: string | null;
+  bullCase: string | null;
+  bearCase: string | null;
+  notes: string | null;
+  targetPrice: string | null;
   createdAt: string;
   updatedAt: string;
 }

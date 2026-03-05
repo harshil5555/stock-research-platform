@@ -1,15 +1,15 @@
 import Badge from '@/components/ui/Badge';
-import { decisionColors } from '@/lib/utils';
+import { decisionStatusColors } from '@/lib/utils';
 
 interface DecisionBadgeProps {
-  decision: string;
+  status: string;
   className?: string;
 }
 
-export default function DecisionBadge({ decision, className }: DecisionBadgeProps) {
+export default function DecisionBadge({ status, className }: DecisionBadgeProps) {
   return (
-    <Badge variant={decisionColors[decision] || decisionColors.none} className={className}>
-      {decision.toUpperCase()}
+    <Badge variant={decisionStatusColors[status] || decisionStatusColors.researching} className={className}>
+      {status.toUpperCase()}
     </Badge>
   );
 }

@@ -7,6 +7,7 @@ import attachmentsRoutes from "./attachments";
 import analysesRoutes from "./analyses";
 import decisionsRoutes from "./decisions";
 import commentsRoutes from "./comments";
+import dashboardRoutes from "./dashboard";
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use("/", attachmentsRoutes);
 router.use("/stocks", analysesRoutes);
 router.use("/stocks", decisionsRoutes);
 router.use("/comments", commentsRoutes);
+router.use("/dashboard", dashboardRoutes);
 
 export default router;

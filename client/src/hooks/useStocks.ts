@@ -3,7 +3,7 @@ import api from '@/lib/api';
 import { useUIStore } from '@/stores/uiStore';
 import type { Stock, Analysis } from '@/types';
 
-export function useStocks(params?: { search?: string; sector?: string }) {
+export function useStocks(params?: { search?: string; sector?: string; decisionStatus?: string }) {
   return useQuery({
     queryKey: ['stocks', params],
     queryFn: async () => {
@@ -29,7 +29,7 @@ export function useCreateStock() {
   const addToast = useUIStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: async (data: Partial<Stock>) => {
+    mutationFn: async (data: { ticker: string; companyName: string; sector?: string | null; notes?: string | null }) => {
       const res = await api.post<Stock>('/stocks', data);
       return res.data;
     },
@@ -47,7 +47,7 @@ export function useUpdateStock() {
 
   return useMutation({
     mutationFn: async ({ id, ...data }: Partial<Stock> & { id: string }) => {
-      const res = await api.patch<Stock>(`/stocks/${id}`, data);
+      const res = await api.put<Stock>(`/stocks/${id}`, data);
       return res.data;
     },
     onSuccess: () => {
@@ -69,13 +69,25 @@ export function useStockAnalyses(stockId: string) {
   });
 }
 
-export function useCreateAnalysis() {
+export function useMyAnalysis(stockId: string) {
+  return useQuery({
+    queryKey: ['analyses', stockId, 'mine'],
+    queryFn: async () => {
+      const res = await api.get<Analysis | null>(`/stocks/${stockId}/analyses/mine`);
+      return res.data;
+    },
+    enabled: !!stockId,
+  });
+}
+
+export function useUpsertAnalysis() {
   const qc = useQueryClient();
   const addToast = useUIStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: async (data: { stockId: string; title: string; content: string }) => {
-      const res = await api.post<Analysis>(`/stocks/${data.stockId}/analyses`, data);
+    mutationFn: async (data: { stockId: string; thesis?: string | null; bullCase?: string | null; bearCase?: string | null; notes?: string | null; targetPrice?: string | null }) => {
+      const { stockId, ...body } = data;
+      const res = await api.put<Analysis>(`/stocks/${stockId}/analyses`, body);
       return res.data;
     },
     onSuccess: (_, vars) => {

@@ -3,7 +3,7 @@ import api from '@/lib/api';
 import { useUIStore } from '@/stores/uiStore';
 import type { Todo } from '@/types';
 
-export function useTodos(params?: { status?: string; priority?: string; stockId?: string; sourceId?: string }) {
+export function useTodos(params?: { status?: string; assignedTo?: string; search?: string; sort?: string; order?: string }) {
   return useQuery({
     queryKey: ['todos', params],
     queryFn: async () => {
@@ -47,7 +47,7 @@ export function useUpdateTodo() {
 
   return useMutation({
     mutationFn: async ({ id, ...data }: Partial<Todo> & { id: string }) => {
-      const res = await api.patch<Todo>(`/todos/${id}`, data);
+      const res = await api.put<Todo>(`/todos/${id}`, data);
       return res.data;
     },
     onSuccess: () => {
@@ -55,6 +55,22 @@ export function useUpdateTodo() {
       addToast({ type: 'success', message: 'Todo updated' });
     },
     onError: () => addToast({ type: 'error', message: 'Failed to update todo' }),
+  });
+}
+
+export function useUpdateTodoStatus() {
+  const qc = useQueryClient();
+  const addToast = useUIStore((s) => s.addToast);
+
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: Todo['status'] }) => {
+      const res = await api.patch<Todo>(`/todos/${id}/status`, { status });
+      return res.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['todos'] });
+    },
+    onError: () => addToast({ type: 'error', message: 'Failed to update status' }),
   });
 }
 

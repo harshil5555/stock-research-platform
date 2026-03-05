@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import TodoItem from './TodoItem';
-import { useUpdateTodo } from '@/hooks/useTodos';
+import { useUpdateTodoStatus } from '@/hooks/useTodos';
 import type { Todo } from '@/types';
 
 interface TodoKanbanProps {
@@ -9,19 +9,19 @@ interface TodoKanbanProps {
 }
 
 const columns = [
-  { id: 'todo' as const, label: 'Todo', color: 'var(--color-priority-medium)' },
+  { id: 'pending' as const, label: 'Pending', color: 'var(--color-priority-medium)' },
   { id: 'in_progress' as const, label: 'In Progress', color: 'var(--accent)' },
   { id: 'done' as const, label: 'Done', color: 'var(--color-buy)' },
 ];
 
 export default function TodoKanban({ todos, onEdit }: TodoKanbanProps) {
-  const updateTodo = useUpdateTodo();
+  const updateTodoStatus = useUpdateTodoStatus();
 
   const handleDrop = (e: React.DragEvent, status: Todo['status']) => {
     e.preventDefault();
     const todoId = e.dataTransfer.getData('todoId');
     if (todoId) {
-      updateTodo.mutate({ id: todoId, status });
+      updateTodoStatus.mutate({ id: todoId, status });
     }
   };
 

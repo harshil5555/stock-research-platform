@@ -12,10 +12,10 @@ interface CommentThreadProps {
   stockId?: string;
 }
 
-function CommentItem({ comment, sourceId, stockId, depth = 0 }: {
+function CommentItem({ comment, entityType, entityId, depth = 0 }: {
   comment: Comment;
-  sourceId?: string;
-  stockId?: string;
+  entityType: 'source' | 'stock' | 'todo';
+  entityId: string;
   depth?: number;
 }) {
   const [replying, setReplying] = useState(false);
@@ -29,30 +29,32 @@ function CommentItem({ comment, sourceId, stockId, depth = 0 }: {
     >
       <div className="flex gap-3">
         <div className="w-7 h-7 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-xs font-medium shrink-0">
-          {comment.creator?.displayName?.charAt(0) || '?'}
+          {comment.authorName?.charAt(0) || '?'}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-sm font-medium text-[var(--text-primary)]">
-              {comment.creator?.displayName || 'Unknown'}
+              {comment.authorName || 'Unknown'}
             </span>
             <span className="text-xs text-[var(--text-secondary)]">
               {formatRelative(comment.createdAt)}
             </span>
           </div>
-          <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{comment.content}</p>
-          <button
-            onClick={() => setReplying(!replying)}
-            className="flex items-center gap-1 text-xs text-[var(--text-secondary)] hover:text-[var(--accent)] mt-1 transition-colors"
-          >
-            <Reply size={12} />
-            Reply
-          </button>
+          <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{comment.body}</p>
+          {depth === 0 && (
+            <button
+              onClick={() => setReplying(!replying)}
+              className="flex items-center gap-1 text-xs text-[var(--text-secondary)] hover:text-[var(--accent)] mt-1 transition-colors"
+            >
+              <Reply size={12} />
+              Reply
+            </button>
+          )}
           {replying && (
             <div className="mt-2">
               <CommentForm
-                sourceId={sourceId}
-                stockId={stockId}
+                entityType={entityType}
+                entityId={entityId}
                 parentId={comment.id}
                 onSuccess={() => setReplying(false)}
               />
@@ -64,8 +66,8 @@ function CommentItem({ comment, sourceId, stockId, depth = 0 }: {
         <CommentItem
           key={reply.id}
           comment={reply}
-          sourceId={sourceId}
-          stockId={stockId}
+          entityType={entityType}
+          entityId={entityId}
           depth={depth + 1}
         />
       ))}
@@ -74,7 +76,9 @@ function CommentItem({ comment, sourceId, stockId, depth = 0 }: {
 }
 
 export default function CommentThread({ sourceId, stockId }: CommentThreadProps) {
-  const { data: comments, isLoading } = useComments({ sourceId, stockId });
+  const entityType = sourceId ? 'source' as const : 'stock' as const;
+  const entityId = (sourceId || stockId) ?? '';
+  const { data: comments, isLoading } = useComments({ entityType, entityId });
 
   return (
     <div className="space-y-4">
@@ -84,7 +88,7 @@ export default function CommentThread({ sourceId, stockId }: CommentThreadProps)
           Discussion {comments ? `(${comments.length})` : ''}
         </h3>
       </div>
-      <CommentForm sourceId={sourceId} stockId={stockId} />
+      {entityId && <CommentForm entityType={entityType} entityId={entityId} />}
       {isLoading ? (
         <div className="space-y-3 mt-4">
           {[1, 2, 3].map((i) => (
@@ -103,8 +107,8 @@ export default function CommentThread({ sourceId, stockId }: CommentThreadProps)
             <CommentItem
               key={comment.id}
               comment={comment}
-              sourceId={sourceId}
-              stockId={stockId}
+              entityType={entityType}
+              entityId={entityId}
             />
           ))}
           {comments?.length === 0 && (

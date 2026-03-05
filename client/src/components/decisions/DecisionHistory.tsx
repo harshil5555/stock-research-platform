@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { History, Target, BarChart } from 'lucide-react';
+import { History } from 'lucide-react';
 import DecisionBadge from './DecisionBadge';
 import Card from '@/components/ui/Card';
 import { formatRelative } from '@/lib/utils';
@@ -30,28 +30,16 @@ export default function DecisionHistory({ decisions }: DecisionHistoryProps) {
         >
           <Card>
             <div className="flex items-start gap-3">
-              <DecisionBadge decision={d.decision} />
+              <DecisionBadge status={d.status} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 text-sm">
-                  {d.targetPrice && (
-                    <span className="flex items-center gap-1 text-[var(--text-secondary)]">
-                      <Target size={14} />
-                      ${d.targetPrice.toFixed(2)}
-                    </span>
-                  )}
-                  {d.confidence && (
-                    <span className="flex items-center gap-1 text-[var(--text-secondary)]">
-                      <BarChart size={14} />
-                      {d.confidence}% confidence
-                    </span>
-                  )}
                   <span className="text-xs text-[var(--text-secondary)] ml-auto">
-                    {d.creator?.displayName} - {formatRelative(d.createdAt)}
+                    {formatRelative(d.createdAt)}
                   </span>
                 </div>
-                {d.notes && (
+                {d.reasoning && (
                   <p className="text-sm text-[var(--text-primary)] mt-2 whitespace-pre-wrap">
-                    {d.notes}
+                    {d.reasoning}
                   </p>
                 )}
               </div>

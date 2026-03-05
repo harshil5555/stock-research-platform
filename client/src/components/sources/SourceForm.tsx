@@ -13,9 +13,9 @@ interface SourceFormProps {
 export default function SourceForm({ onClose }: SourceFormProps) {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
-  const [type, setType] = useState('article');
+  const [sourceType, setSourceType] = useState<Source['sourceType']>('article');
   const [summary, setSummary] = useState('');
-  const [content, setContent] = useState('');
+  const [notes, setNotes] = useState('');
   const createSource = useCreateSource();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -24,9 +24,9 @@ export default function SourceForm({ onClose }: SourceFormProps) {
       {
         title,
         url: url || null,
-        type: type as Source['type'],
+        sourceType,
         summary: summary || null,
-        content: content || null,
+        notes: notes || null,
       },
       { onSuccess: onClose }
     );
@@ -50,14 +50,14 @@ export default function SourceForm({ onClose }: SourceFormProps) {
       />
       <Select
         label="Type"
-        value={type}
-        onChange={(e) => setType(e.target.value)}
+        value={sourceType}
+        onChange={(e) => setSourceType(e.target.value as Source['sourceType'])}
         options={[
           { value: 'article', label: 'Article' },
           { value: 'report', label: 'Report' },
-          { value: 'filing', label: 'Filing' },
-          { value: 'news', label: 'News' },
-          { value: 'analysis', label: 'Analysis' },
+          { value: 'video', label: 'Video' },
+          { value: 'podcast', label: 'Podcast' },
+          { value: 'tweet', label: 'Tweet' },
           { value: 'other', label: 'Other' },
         ]}
       />
@@ -69,9 +69,9 @@ export default function SourceForm({ onClose }: SourceFormProps) {
         rows={2}
       />
       <Textarea
-        label="Content"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
+        label="Notes"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
         placeholder="Full content or notes..."
         rows={5}
       />

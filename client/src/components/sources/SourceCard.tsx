@@ -41,7 +41,7 @@ export default function SourceCard({ source }: SourceCardProps) {
             </p>
           )}
           <div className="flex items-center gap-2">
-            <Badge>{sourceTypeLabels[source.type] || source.type}</Badge>
+            <Badge>{sourceTypeLabels[source.sourceType] || source.sourceType}</Badge>
             {source.attachments && source.attachments.length > 0 && (
               <span className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
                 <Paperclip size={12} />

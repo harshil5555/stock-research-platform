@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { GripVertical, Calendar, Trash2, Pencil } from 'lucide-react';
+import { GripVertical, Trash2, Pencil } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
-import { cn, priorityColors, formatRelative } from '@/lib/utils';
-import { useUpdateTodo, useDeleteTodo } from '@/hooks/useTodos';
+import { cn, priorityLabel, formatRelative } from '@/lib/utils';
+import { useUpdateTodoStatus, useDeleteTodo } from '@/hooks/useTodos';
 import type { Todo } from '@/types';
 
 interface TodoItemProps {
@@ -12,10 +12,10 @@ interface TodoItemProps {
 }
 
 export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
-  const updateTodo = useUpdateTodo();
+  const updateTodoStatus = useUpdateTodoStatus();
   const deleteTodo = useDeleteTodo();
 
-  const statusOptions = ['todo', 'in_progress', 'done'] as const;
+  const statusOptions = ['pending', 'in_progress', 'done'] as const;
 
   return (
     <motion.div
@@ -40,8 +40,8 @@ export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
             >
               {todo.title}
             </h4>
-            <Badge variant={priorityColors[todo.priority]} className="shrink-0">
-              {todo.priority}
+            <Badge className="shrink-0">
+              P{todo.priority} {priorityLabel(todo.priority)}
             </Badge>
           </div>
           {!compact && todo.description && (
@@ -50,19 +50,13 @@ export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
             </p>
           )}
           <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
-            {todo.dueDate && (
-              <span className="flex items-center gap-1">
-                <Calendar size={12} />
-                {new Date(todo.dueDate).toLocaleDateString()}
-              </span>
-            )}
             <span>{formatRelative(todo.createdAt)}</span>
           </div>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <select
             value={todo.status}
-            onChange={(e) => updateTodo.mutate({ id: todo.id, status: e.target.value as Todo['status'] })}
+            onChange={(e) => updateTodoStatus.mutate({ id: todo.id, status: e.target.value as Todo['status'] })}
             className="text-xs bg-transparent border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text-secondary)] focus:outline-none"
           >
             {statusOptions.map((s) => (
