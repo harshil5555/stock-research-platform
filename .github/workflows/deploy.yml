@@ -16,7 +16,7 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           timeout: 180s
-          command_timeout: 300s
+          command_timeout: 600s
           script_stop: true
           script: |
             set -e
@@ -25,8 +25,9 @@ jobs:
             cd /root
             docker compose up -d --build stock-app
             docker image prune -f --filter "until=24h"
+            # Health check via docker exec
             for i in $(seq 1 30); do
-              curl -sf http://localhost:3000/api/health && exit 0
+              docker exec stock-app wget -qO- http://localhost:3000/api/health && exit 0
               sleep 2
             done
             echo "Health check failed after 60s"
