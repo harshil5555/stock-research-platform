@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import Skeleton from '@/components/ui/Skeleton';
 import Textarea from '@/components/ui/Textarea';
 import { useUpsertAnalysis, useMyAnalysis } from '@/hooks/useStocks';
 
@@ -10,23 +11,39 @@ interface AnalysisEditorProps {
 }
 
 export default function AnalysisEditor({ stockId, onClose }: AnalysisEditorProps) {
-  const { data: existing } = useMyAnalysis(stockId);
-  const [thesis, setThesis] = useState(existing?.thesis ?? '');
-  const [bullCase, setBullCase] = useState(existing?.bullCase ?? '');
-  const [bearCase, setBearCase] = useState(existing?.bearCase ?? '');
-  const [notes, setNotes] = useState(existing?.notes ?? '');
-  const [targetPrice, setTargetPrice] = useState(existing?.targetPrice ?? '');
+  const { data: existing, isLoading } = useMyAnalysis(stockId);
+  const [initialized, setInitialized] = useState(false);
+  const [thesis, setThesis] = useState('');
+  const [bullCase, setBullCase] = useState('');
+  const [bearCase, setBearCase] = useState('');
+  const [notes, setNotes] = useState('');
+  const [targetPrice, setTargetPrice] = useState('');
 
   useEffect(() => {
-    if (existing) {
+    if (existing && !initialized) {
       setThesis(existing.thesis ?? '');
       setBullCase(existing.bullCase ?? '');
       setBearCase(existing.bearCase ?? '');
       setNotes(existing.notes ?? '');
       setTargetPrice(existing.targetPrice ?? '');
+      setInitialized(true);
     }
-  }, [existing]);
+  }, [existing, initialized]);
   const upsertAnalysis = useUpsertAnalysis();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-24 w-full" />
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+        </div>
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-20 w-full" />
+      </div>
+    );
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -160,7 +160,7 @@ export default function SourceDetailPage() {
                   <button
                     onClick={() => downloadAttachment(att.id, att.originalName)}
                     aria-label="Download attachment"
-                    className="text-[var(--accent)] hover:text-[var(--accent)] transition-colors"
+                    className="text-[var(--accent)] hover:brightness-125 transition-all"
                   >
                     <Download size={14} />
                   </button>

@@ -60,6 +60,7 @@ export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
           <select
             value={todo.status}
             onChange={(e) => updateTodoStatus.mutate({ id: todo.id, status: e.target.value as Todo['status'] })}
+            aria-label="Todo status"
             className="text-xs bg-transparent border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text-secondary)] focus:outline-none"
           >
             {statusOptions.map((s) => (

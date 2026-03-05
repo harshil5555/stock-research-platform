@@ -70,6 +70,7 @@ export function useUpdateTodoStatus() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['todos'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
     },
     onError: () => addToast({ type: 'error', message: 'Failed to update status' }),
   });
