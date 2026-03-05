@@ -1,9 +1,7 @@
 export interface User {
   id: string;
-  email: string;
-  name: string;
-  role: 'admin' | 'analyst' | 'viewer';
-  createdAt: string;
+  username: string;
+  displayName: string;
 }
 
 export interface AuthResponse {

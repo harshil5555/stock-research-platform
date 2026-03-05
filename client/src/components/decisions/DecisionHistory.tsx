@@ -46,7 +46,7 @@ export default function DecisionHistory({ decisions }: DecisionHistoryProps) {
                     </span>
                   )}
                   <span className="text-xs text-[var(--text-secondary)] ml-auto">
-                    {d.creator?.name} - {formatRelative(d.createdAt)}
+                    {d.creator?.displayName} - {formatRelative(d.createdAt)}
                   </span>
                 </div>
                 {d.notes && (

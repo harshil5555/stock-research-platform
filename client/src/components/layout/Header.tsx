@@ -19,11 +19,11 @@ export default function Header() {
       <ThemeToggle />
       <div className="flex items-center gap-3 pl-3 border-l border-[var(--border)]">
         <div className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-sm font-medium">
-          {user?.name?.charAt(0).toUpperCase() || <User size={16} />}
+          {user?.displayName?.charAt(0).toUpperCase() || <User size={16} />}
         </div>
         <div className="hidden sm:block">
-          <p className="text-sm font-medium text-[var(--text-primary)] leading-tight">{user?.name}</p>
-          <p className="text-xs text-[var(--text-secondary)]">{user?.role}</p>
+          <p className="text-sm font-medium text-[var(--text-primary)] leading-tight">{user?.displayName}</p>
+          <p className="text-xs text-[var(--text-secondary)]">{user?.username}</p>
         </div>
         <button
           onClick={handleLogout}

@@ -39,7 +39,7 @@ export default function AnalysisView({ analyses }: AnalysisViewProps) {
             </div>
             {analysis.creator && (
               <p className="text-xs text-[var(--text-secondary)] mb-3">
-                By {analysis.creator.name}
+                By {analysis.creator.displayName}
               </p>
             )}
             <div className="text-sm text-[var(--text-primary)] whitespace-pre-wrap leading-relaxed">

@@ -145,7 +145,7 @@ export default function DecisionsPage() {
                       )}
                     </td>
                     <td className="px-5 py-3 text-sm text-[var(--text-secondary)]">
-                      {d.creator?.name || 'Unknown'}
+                      {d.creator?.displayName || 'Unknown'}
                     </td>
                     <td className="px-5 py-3 text-xs text-[var(--text-secondary)]">
                       {formatDate(d.createdAt)}

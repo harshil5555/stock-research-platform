@@ -78,8 +78,12 @@ router.post(
 
       if (!source) {
         // Clean up uploaded file
-        if (req.file) {
-          fs.unlinkSync(req.file.path);
+        try {
+          if (req.file) {
+            fs.unlinkSync(req.file.path);
+          }
+        } catch {
+          // Ignore cleanup errors
         }
         res.status(404).json({ error: "Source not found" });
         return;
@@ -91,8 +95,7 @@ router.post(
       }
 
       // Magic byte validation: verify actual file content matches claimed MIME type
-      const fileBuffer = fs.readFileSync(req.file.path);
-      const detected = await fileType.fromBuffer(fileBuffer);
+      const detected = await fileType.fromFile(req.file.path);
       if (detected && ALLOWED_MAGIC_MIMES.has(detected.mime)) {
         // Detected type is in our whitelist — trust the detected MIME over client-reported
         req.file.mimetype = detected.mime;
@@ -121,6 +124,14 @@ router.post(
       broadcast("attachment", "created", attachment, req.user!.userId);
       res.status(201).json(attachment);
     } catch (err) {
+      // Clean up uploaded file if DB insert failed
+      try {
+        if (req.file && fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+      } catch {
+        // Ignore cleanup errors to avoid masking the original error
+      }
       if (handleRouteError(err, res)) return;
       console.error("Upload attachment error:", err);
       res.status(500).json({ error: "Internal server error" });

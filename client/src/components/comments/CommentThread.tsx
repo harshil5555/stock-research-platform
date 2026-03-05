@@ -29,12 +29,12 @@ function CommentItem({ comment, sourceId, stockId, depth = 0 }: {
     >
       <div className="flex gap-3">
         <div className="w-7 h-7 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-xs font-medium shrink-0">
-          {comment.creator?.name?.charAt(0) || '?'}
+          {comment.creator?.displayName?.charAt(0) || '?'}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-sm font-medium text-[var(--text-primary)]">
-              {comment.creator?.name || 'Unknown'}
+              {comment.creator?.displayName || 'Unknown'}
             </span>
             <span className="text-xs text-[var(--text-secondary)]">
               {formatRelative(comment.createdAt)}
