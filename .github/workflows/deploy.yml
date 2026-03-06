@@ -19,7 +19,7 @@ jobs:
           command_timeout: 600s
           script: |
             set -e
-            cd /root/stock-research-platform
+            cd /home/root/stock-research-platform
             git pull origin main
             cd /root
             docker compose up -d --build stock-app
