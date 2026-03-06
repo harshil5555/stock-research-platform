@@ -64,7 +64,7 @@ export default function TodosPage() {
           {[1, 2, 3, 4, 5, 6].map((i) => <CardSkeleton key={i} />)}
         </div>
       ) : view === 'kanban' ? (
-        <TodoKanban todos={todos || []} onEdit={(todo) => { setEditingTodo(todo); setShowForm(true); }} />
+        <TodoKanban todos={todos || []} onEdit={(todo) => { setEditingTodo(todo); setShowForm(true); }} activeFilter={statusFilter || undefined} />
       ) : (
         <div className="space-y-2">
           <AnimatePresence mode="popLayout">

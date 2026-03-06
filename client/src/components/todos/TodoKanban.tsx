@@ -6,6 +6,7 @@ import type { Todo } from '@/types';
 interface TodoKanbanProps {
   todos: Todo[];
   onEdit?: (todo: Todo) => void;
+  activeFilter?: string;
 }
 
 const columns = [
@@ -14,8 +15,9 @@ const columns = [
   { id: 'done' as const, label: 'Done', color: 'var(--color-buy)' },
 ];
 
-export default function TodoKanban({ todos, onEdit }: TodoKanbanProps) {
+export default function TodoKanban({ todos, onEdit, activeFilter }: TodoKanbanProps) {
   const updateTodoStatus = useUpdateTodoStatus();
+  const visibleColumns = activeFilter ? columns.filter(c => c.id === activeFilter) : columns;
 
   const handleDrop = (e: React.DragEvent, status: Todo['status']) => {
     e.preventDefault();
@@ -35,7 +37,7 @@ export default function TodoKanban({ todos, onEdit }: TodoKanbanProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {columns.map((col) => {
+      {visibleColumns.map((col) => {
         const items = todos.filter((t) => t.status === col.id);
         return (
           <div
