@@ -1,5 +1,5 @@
 import { Router, Response } from "express";
-import { eq, desc, asc, ilike, and, SQL } from "drizzle-orm";
+import { eq, desc, asc, ilike, and, inArray, SQL } from "drizzle-orm";
 import { db } from "../db";
 import { todos, sourceTodos, sources, todoStocks, stocks } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
@@ -64,6 +64,7 @@ router.get(
           description: todos.description,
           status: todos.status,
           priority: todos.priority,
+          sortOrder: todos.sortOrder,
           createdBy: todos.createdBy,
           assignedTo: todos.assignedTo,
           dueDate: todos.dueDate,
@@ -72,7 +73,7 @@ router.get(
         })
         .from(todos)
         .where(where)
-        .orderBy(orderDir);
+        .orderBy(asc(todos.sortOrder), orderDir);
 
       res.json(result);
     } catch (err) {
@@ -183,6 +184,40 @@ router.put(
     } catch (err) {
       if (handleRouteError(err, res)) return;
       console.error("Update todo error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// PATCH /api/todos/reorder
+router.patch(
+  "/reorder",
+  authMiddleware,
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const { items } = req.body;
+      if (!Array.isArray(items) || items.length === 0) {
+        res.status(400).json({ error: "items array is required" });
+        return;
+      }
+
+      for (const item of items) {
+        if (!item.id || !UUID_RE.test(item.id) || typeof item.sortOrder !== "number") {
+          res.status(400).json({ error: "Each item must have a valid id and sortOrder" });
+          return;
+        }
+      }
+
+      await Promise.all(
+        items.map((item: { id: string; sortOrder: number }) =>
+          db.update(todos).set({ sortOrder: item.sortOrder }).where(eq(todos.id, item.id))
+        )
+      );
+
+      broadcast("todo", "updated", { items }, req.user!.userId);
+      res.json({ message: "Reordered" });
+    } catch (err) {
+      console.error("Reorder todos error:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   }

@@ -93,6 +93,20 @@ export function useDeleteTodo() {
   });
 }
 
+export function useReorderTodos() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (items: { id: string; sortOrder: number }[]) => {
+      const res = await api.patch('/todos/reorder', { items });
+      return res.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['todos'] });
+    },
+  });
+}
+
 export function useLinkStockToTodo() {
   const qc = useQueryClient();
   const addToast = useUIStore((s) => s.addToast);

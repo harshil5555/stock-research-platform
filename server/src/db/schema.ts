@@ -66,6 +66,7 @@ export const todos = pgTable(
       .notNull(),
     assignedTo: uuid("assigned_to").references(() => users.id),
     dueDate: timestamp("due_date", { withTimezone: true }),
+    sortOrder: integer("sort_order").default(0).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
