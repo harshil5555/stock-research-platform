@@ -26,14 +26,25 @@ const SECTORS = [
   'Communication Services', 'Utilities',
 ];
 
+const DECISION_STATUSES = [
+  { value: 'researching', label: 'Researching' },
+  { value: 'considering', label: 'Considering' },
+  { value: 'bought', label: 'Bought' },
+  { value: 'passed', label: 'Passed' },
+  { value: 'sold', label: 'Sold' },
+  { value: 'watching', label: 'Watching' },
+];
+
 export default function StocksPage() {
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState('');
   const [sectorFilter, setSectorFilter] = useState('');
+  const [decisionFilter, setDecisionFilter] = useState('');
   const debouncedSearch = useDebounce(search);
   const { data: stocks, isLoading } = useStocks({
     search: debouncedSearch || undefined,
     sector: sectorFilter || undefined,
+    decisionStatus: decisionFilter || undefined,
   });
 
   return (
@@ -68,6 +79,14 @@ export default function StocksPage() {
           options={[
             { value: '', label: 'All Sectors' },
             ...SECTORS.map((s) => ({ value: s, label: s })),
+          ]}
+        />
+        <Select
+          value={decisionFilter}
+          onChange={(e) => setDecisionFilter(e.target.value)}
+          options={[
+            { value: '', label: 'All Decisions' },
+            ...DECISION_STATUSES,
           ]}
         />
       </div>
