@@ -30,7 +30,7 @@ export default function AnalysisView({ analyses }: AnalysisViewProps) {
           <Card>
             <div className="flex items-center gap-2 mb-3">
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-                Analysis by User {analysis.userId.slice(0, 8)}
+                Analysis by {analysis.authorName ?? `User ${analysis.userId.slice(0, 8)}`}
               </h3>
               {analysis.targetPrice && (
                 <span className="text-xs text-[var(--text-secondary)]">

@@ -100,6 +100,7 @@ export interface Analysis {
   id: string;
   stockId: string;
   userId: string;
+  authorName?: string;
   thesis: string | null;
   bullCase: string | null;
   bearCase: string | null;

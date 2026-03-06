@@ -1,7 +1,7 @@
 import { Router, Response } from "express";
 import { eq, and } from "drizzle-orm";
 import { db } from "../db";
-import { analyses, stocks } from "../db/schema";
+import { analyses, stocks, users } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { validate } from "../middleware/validate";
 import { upsertAnalysisSchema } from "../validators/analyses";
@@ -18,8 +18,21 @@ router.get(
     try {
       const stockId = param(req, "stockId");
       const result = await db
-        .select()
+        .select({
+          id: analyses.id,
+          stockId: analyses.stockId,
+          userId: analyses.userId,
+          authorName: users.displayName,
+          thesis: analyses.thesis,
+          bullCase: analyses.bullCase,
+          bearCase: analyses.bearCase,
+          notes: analyses.notes,
+          targetPrice: analyses.targetPrice,
+          createdAt: analyses.createdAt,
+          updatedAt: analyses.updatedAt,
+        })
         .from(analyses)
+        .innerJoin(users, eq(analyses.userId, users.id))
         .where(eq(analyses.stockId, stockId));
 
       res.json(result);
