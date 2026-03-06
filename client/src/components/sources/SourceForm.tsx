@@ -4,6 +4,7 @@ import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Textarea from '@/components/ui/Textarea';
 import { useCreateSource, useUpdateSource } from '@/hooks/useSources';
+import { useUIStore } from '@/stores/uiStore';
 import type { Source } from '@/types';
 
 interface SourceFormProps {
@@ -20,9 +21,14 @@ export default function SourceForm({ onClose, source }: SourceFormProps) {
   const [notes, setNotes] = useState(source?.notes ?? '');
   const createSource = useCreateSource();
   const updateSource = useUpdateSource();
+  const addToast = useUIStore((s) => s.addToast);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (url && !/^https?:\/\/.+/i.test(url)) {
+      addToast({ type: 'error', message: 'URL must start with http:// or https://' });
+      return;
+    }
     const payload = {
       title,
       url: url || null,
@@ -51,8 +57,9 @@ export default function SourceForm({ onClose, source }: SourceFormProps) {
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder="https://..."
-        type="url"
+        type="text"
       />
+      <p className="text-xs text-[var(--text-secondary)] -mt-2">Include https:// for links</p>
       <Select
         label="Type"
         value={sourceType}
