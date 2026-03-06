@@ -24,8 +24,9 @@ export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
+      onClick={() => navigate(`/todos/${todo.id}`)}
       className={cn(
-        'group bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4 hover:shadow-sm transition-shadow',
+        'group bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4 hover:shadow-sm transition-shadow cursor-pointer',
         todo.status === 'done' && 'opacity-60'
       )}
     >
@@ -35,11 +36,9 @@ export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
           <div className="flex items-center gap-2 mb-1">
             <h4
               className={cn(
-                'text-sm font-medium text-[var(--text-primary)] truncate',
+                'text-sm font-medium text-[var(--text-primary)] truncate hover:text-[var(--accent)] transition-colors',
                 todo.status === 'done' && 'line-through',
-                !compact && 'cursor-pointer hover:text-[var(--accent)] transition-colors'
               )}
-              onClick={!compact ? () => navigate(`/todos/${todo.id}`) : undefined}
             >
               {todo.title}
             </h4>
@@ -59,7 +58,7 @@ export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
           <select
             value={todo.status}
             onChange={(e) => updateTodoStatus.mutate({ id: todo.id, status: e.target.value as Todo['status'] })}

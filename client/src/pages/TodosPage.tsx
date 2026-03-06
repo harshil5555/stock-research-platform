@@ -67,7 +67,7 @@ export default function TodosPage() {
         <TodoKanban todos={todos || []} onEdit={(todo) => { setEditingTodo(todo); setShowForm(true); }} activeFilter={statusFilter || undefined} />
       ) : (
         <div className="space-y-2">
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence>
             {(todos || []).map((todo) => (
               <TodoItem key={todo.id} todo={todo} onEdit={(t) => { setEditingTodo(t); setShowForm(true); }} />
             ))}
