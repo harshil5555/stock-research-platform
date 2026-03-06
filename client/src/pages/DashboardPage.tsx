@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -10,7 +11,11 @@ import {
 } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
+import Modal from '@/components/ui/Modal';
 import { CardSkeleton } from '@/components/ui/Skeleton';
+import SourceForm from '@/components/sources/SourceForm';
+import StockForm from '@/components/stocks/StockForm';
+import TodoForm from '@/components/todos/TodoForm';
 import { useDashboardStats } from '@/hooks/useDashboard';
 import { formatRelative } from '@/lib/utils';
 
@@ -30,6 +35,9 @@ const item = {
 export default function DashboardPage() {
   const { data: stats, isLoading } = useDashboardStats();
   const navigate = useNavigate();
+  const [showSourceForm, setShowSourceForm] = useState(false);
+  const [showStockForm, setShowStockForm] = useState(false);
+  const [showTodoForm, setShowTodoForm] = useState(false);
 
   const statCards = [
     { label: 'Stocks', value: stats?.totalStocks ?? 0, icon: TrendingUp, color: 'var(--accent)', to: '/stocks' },
@@ -56,11 +64,15 @@ export default function DashboardPage() {
           <p className="text-sm text-[var(--text-secondary)] mt-1">Overview of your research</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="secondary" onClick={() => navigate('/sources')}>
+          <Button size="sm" variant="secondary" onClick={() => setShowSourceForm(true)}>
             <Plus size={14} />
             Source
           </Button>
-          <Button size="sm" onClick={() => navigate('/stocks')}>
+          <Button size="sm" variant="secondary" onClick={() => setShowTodoForm(true)}>
+            <Plus size={14} />
+            Todo
+          </Button>
+          <Button size="sm" onClick={() => setShowStockForm(true)}>
             <Plus size={14} />
             Stock
           </Button>
@@ -125,6 +137,16 @@ export default function DashboardPage() {
           )}
         </Card>
       </div>
+
+      <Modal open={showSourceForm} onClose={() => setShowSourceForm(false)} title="New Source">
+        <SourceForm onClose={() => setShowSourceForm(false)} />
+      </Modal>
+      <Modal open={showStockForm} onClose={() => setShowStockForm(false)} title="New Stock">
+        <StockForm onClose={() => setShowStockForm(false)} />
+      </Modal>
+      <Modal open={showTodoForm} onClose={() => setShowTodoForm(false)} title="New Todo">
+        <TodoForm onClose={() => setShowTodoForm(false)} />
+      </Modal>
     </div>
   );
 }
