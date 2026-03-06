@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { GripVertical, Trash2, Pencil } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
-import { cn, priorityLabel, formatRelative } from '@/lib/utils';
+import { cn, priorityLabel, formatRelative, formatDate } from '@/lib/utils';
 import { useUpdateTodoStatus, useDeleteTodo } from '@/hooks/useTodos';
 import type { Todo } from '@/types';
 
@@ -52,7 +52,7 @@ export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
           <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
             <span>{formatRelative(todo.createdAt)}</span>
             {todo.dueDate && (
-              <span>Due {formatRelative(todo.dueDate)}</span>
+              <span>Due {formatDate(todo.dueDate)}</span>
             )}
           </div>
         </div>
