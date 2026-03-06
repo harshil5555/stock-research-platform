@@ -27,7 +27,7 @@ import {
 } from '@/hooks/useTodos';
 import { useStocks } from '@/hooks/useStocks';
 import { useSources } from '@/hooks/useSources';
-import { formatDate, priorityLabel } from '@/lib/utils';
+import { formatDate, priorityLabel, priorityBadgeVariant } from '@/lib/utils';
 
 export default function TodoDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -91,7 +91,7 @@ export default function TodoDetailPage() {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-xl font-bold text-[var(--text-primary)]">{todo.title}</h1>
-                <Badge>
+                <Badge variant={priorityBadgeVariant(todo.priority)}>
                   P{todo.priority} {priorityLabel(todo.priority)}
                 </Badge>
                 <div

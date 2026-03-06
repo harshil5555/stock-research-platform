@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { GripVertical, Trash2, Pencil } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
-import { cn, priorityLabel, formatRelative, formatDate } from '@/lib/utils';
+import { cn, priorityLabel, priorityBadgeVariant, formatRelative, formatDate } from '@/lib/utils';
 import { useUpdateTodoStatus, useDeleteTodo } from '@/hooks/useTodos';
 import type { Todo } from '@/types';
 
@@ -42,7 +42,7 @@ export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
             >
               {todo.title}
             </h4>
-            <Badge className="shrink-0">
+            <Badge variant={priorityBadgeVariant(todo.priority)} className="shrink-0">
               P{todo.priority} {priorityLabel(todo.priority)}
             </Badge>
           </div>

@@ -35,6 +35,14 @@ export function priorityLabel(priority: number): string {
   return 'None';
 }
 
+export function priorityBadgeVariant(priority: number): string {
+  if (priority >= 9) return 'bg-[color-mix(in_srgb,var(--color-priority-immediate)_15%,transparent)] text-[var(--color-priority-immediate)]';
+  if (priority >= 7) return 'bg-[color-mix(in_srgb,var(--color-priority-high)_15%,transparent)] text-[var(--color-priority-high)]';
+  if (priority >= 4) return 'bg-[color-mix(in_srgb,var(--color-priority-medium)_15%,transparent)] text-[var(--color-priority-medium)]';
+  if (priority >= 1) return 'bg-[color-mix(in_srgb,var(--color-priority-low)_15%,transparent)] text-[var(--color-priority-low)]';
+  return 'bg-[var(--hover)] text-[var(--text-secondary)]';
+}
+
 export const decisionStatusColors: Record<string, string> = {
   researching: 'bg-[var(--color-watching)] text-white',
   considering: 'bg-[var(--color-hold)] text-white',
