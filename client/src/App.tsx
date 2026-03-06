@@ -6,6 +6,7 @@ import ToastContainer from '@/components/ui/Toast';
 import LoginPage from '@/pages/LoginPage';
 import DashboardPage from '@/pages/DashboardPage';
 import TodosPage from '@/pages/TodosPage';
+import TodoDetailPage from '@/pages/TodoDetailPage';
 import SourcesPage from '@/pages/SourcesPage';
 import SourceDetailPage from '@/pages/SourceDetailPage';
 import StocksPage from '@/pages/StocksPage';
@@ -33,6 +34,7 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/todos" element={<TodosPage />} />
+            <Route path="/todos/:id" element={<TodoDetailPage />} />
             <Route path="/sources" element={<SourcesPage />} />
             <Route path="/sources/:id" element={<SourceDetailPage />} />
             <Route path="/stocks" element={<StocksPage />} />

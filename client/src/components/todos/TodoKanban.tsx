@@ -52,7 +52,7 @@ export default function TodoKanban({ todos, onEdit, activeFilter }: TodoKanbanPr
               <span className="text-xs text-[var(--text-secondary)] ml-auto">{items.length}</span>
             </div>
             <div className="space-y-2">
-              <AnimatePresence mode="popLayout">
+              <AnimatePresence>
                 {items.map((todo) => (
                   <div
                     key={todo.id}

@@ -131,3 +131,36 @@ export function useUnlinkStock() {
     onError: () => addToast({ type: 'error', message: 'Failed to unlink stock' }),
   });
 }
+
+export function useLinkTodo() {
+  const qc = useQueryClient();
+  const addToast = useUIStore((s) => s.addToast);
+
+  return useMutation({
+    mutationFn: async ({ sourceId, todoId }: { sourceId: string; todoId: string }) => {
+      const res = await api.post(`/sources/${sourceId}/link-todo`, { todoId });
+      return res.data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['sources', vars.sourceId] });
+      addToast({ type: 'success', message: 'Todo linked' });
+    },
+    onError: () => addToast({ type: 'error', message: 'Failed to link todo' }),
+  });
+}
+
+export function useUnlinkTodo() {
+  const qc = useQueryClient();
+  const addToast = useUIStore((s) => s.addToast);
+
+  return useMutation({
+    mutationFn: async ({ sourceId, todoId }: { sourceId: string; todoId: string }) => {
+      await api.delete(`/sources/${sourceId}/link-todo/${todoId}`);
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['sources', vars.sourceId] });
+      addToast({ type: 'success', message: 'Todo unlinked' });
+    },
+    onError: () => addToast({ type: 'error', message: 'Failed to unlink todo' }),
+  });
+}

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { stripHtml } from "../utils/sanitize";
 
 export const createDecisionSchema = z.object({
   status: z.enum([
@@ -9,7 +10,7 @@ export const createDecisionSchema = z.object({
     "sold",
     "watching",
   ]),
-  reasoning: z.string().max(5000).optional().nullable(),
+  reasoning: z.string().max(5000).optional().nullable().transform((v) => v ? stripHtml(v) : v),
 });
 
 export type CreateDecisionInput = z.infer<typeof createDecisionSchema>;

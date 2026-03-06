@@ -1,7 +1,7 @@
 import { Router, Response } from "express";
 import { eq, desc, asc, ilike, and, SQL } from "drizzle-orm";
 import { db } from "../db";
-import { todos } from "../db/schema";
+import { todos, sourceTodos, sources, todoStocks, stocks } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { validate } from "../middleware/validate";
 import {
@@ -100,7 +100,33 @@ router.get(
         return;
       }
 
-      res.json(todo);
+      const [linkedSources, linkedStocks] = await Promise.all([
+        db
+          .select({
+            id: sources.id,
+            title: sources.title,
+            sourceType: sources.sourceType,
+            url: sources.url,
+          })
+          .from(sourceTodos)
+          .innerJoin(sources, eq(sourceTodos.sourceId, sources.id))
+          .where(eq(sourceTodos.todoId, todo.id)),
+        db
+          .select({
+            id: stocks.id,
+            ticker: stocks.ticker,
+            companyName: stocks.companyName,
+          })
+          .from(todoStocks)
+          .innerJoin(stocks, eq(todoStocks.stockId, stocks.id))
+          .where(eq(todoStocks.todoId, todo.id)),
+      ]);
+
+      res.json({
+        ...todo,
+        sources: linkedSources,
+        stocks: linkedStocks,
+      });
     } catch (err) {
       if (handleRouteError(err, res)) return;
       console.error("Get todo error:", err);
@@ -186,6 +212,108 @@ router.patch(
     } catch (err) {
       if (handleRouteError(err, res)) return;
       console.error("Patch todo status error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// Link stock to todo
+router.post(
+  "/:id/link-stock",
+  authMiddleware,
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const id = param(req, "id");
+      const { stockId } = req.body;
+
+      if (!stockId || !UUID_RE.test(stockId)) {
+        res.status(400).json({ error: "Valid stockId is required" });
+        return;
+      }
+
+      const [todo] = await db.select({ id: todos.id }).from(todos).where(eq(todos.id, id)).limit(1);
+      if (!todo) { res.status(404).json({ error: "Todo not found" }); return; }
+
+      const [stock] = await db.select({ id: stocks.id }).from(stocks).where(eq(stocks.id, stockId)).limit(1);
+      if (!stock) { res.status(404).json({ error: "Stock not found" }); return; }
+
+      await db.insert(todoStocks).values({ todoId: id, stockId }).onConflictDoNothing();
+      res.status(201).json({ message: "Stock linked" });
+    } catch (err) {
+      if (handleRouteError(err, res)) return;
+      console.error("Link stock to todo error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// Unlink stock from todo
+router.delete(
+  "/:id/link-stock/:stockId",
+  authMiddleware,
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const id = param(req, "id");
+      const stockId = param(req, "stockId");
+
+      await db.delete(todoStocks).where(
+        and(eq(todoStocks.todoId, id), eq(todoStocks.stockId, stockId))
+      );
+      res.json({ message: "Stock unlinked" });
+    } catch (err) {
+      if (handleRouteError(err, res)) return;
+      console.error("Unlink stock from todo error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// Link source to todo
+router.post(
+  "/:id/link-source",
+  authMiddleware,
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const id = param(req, "id");
+      const { sourceId } = req.body;
+
+      if (!sourceId || !UUID_RE.test(sourceId)) {
+        res.status(400).json({ error: "Valid sourceId is required" });
+        return;
+      }
+
+      const [todo] = await db.select({ id: todos.id }).from(todos).where(eq(todos.id, id)).limit(1);
+      if (!todo) { res.status(404).json({ error: "Todo not found" }); return; }
+
+      const [source] = await db.select({ id: sources.id }).from(sources).where(eq(sources.id, sourceId)).limit(1);
+      if (!source) { res.status(404).json({ error: "Source not found" }); return; }
+
+      await db.insert(sourceTodos).values({ sourceId, todoId: id }).onConflictDoNothing();
+      res.status(201).json({ message: "Source linked" });
+    } catch (err) {
+      if (handleRouteError(err, res)) return;
+      console.error("Link source to todo error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// Unlink source from todo
+router.delete(
+  "/:id/link-source/:sourceId",
+  authMiddleware,
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const id = param(req, "id");
+      const sourceId = param(req, "sourceId");
+
+      await db.delete(sourceTodos).where(
+        and(eq(sourceTodos.todoId, id), eq(sourceTodos.sourceId, sourceId))
+      );
+      res.json({ message: "Source unlinked" });
+    } catch (err) {
+      if (handleRouteError(err, res)) return;
+      console.error("Unlink source from todo error:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   }

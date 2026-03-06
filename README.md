@@ -89,6 +89,7 @@ Everything updates in real-time via WebSocket. When Harshil adds a source, Guest
 | **Todos** | Kanban board (Pending/In Progress/Done) + list view with filters |
 | **Sources** | Card grid of research materials with type filters |
 | **Source Detail** | Source info, attachments, linked stocks/todos, discussion |
+| **Todos Detail** | Todo info, linked sources/stocks, discussion |
 | **Stocks** | Card grid of discovered stocks with search/sector filters |
 | **Stock Detail** | Analysis (per user), discussion, decisions tabs |
 | **Decisions** | Table of all investment decisions across stocks |
@@ -99,7 +100,8 @@ Everything updates in real-time via WebSocket. When Harshil adds a source, Guest
 - Drag-and-drop file uploads (10MB max, type-validated)
 - Real-time updates via WebSocket (no refresh needed)
 - Threaded comments on sources, stocks, and todos
-- Many-to-many linking (sources ↔ stocks, sources ↔ todos)
+- Many-to-many linking (sources ↔ stocks, sources ↔ todos, todos ↔ stocks)
+- Kanban drag-and-drop for todo status management
 - Decision history timeline with rationale
 - JWT auth with refresh token rotation (httpOnly cookies)
 

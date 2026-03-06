@@ -154,6 +154,22 @@ export const sourceStocks = pgTable(
   ]
 );
 
+// Todo-Stocks junction table
+export const todoStocks = pgTable(
+  "todo_stocks",
+  {
+    todoId: uuid("todo_id")
+      .references(() => todos.id, { onDelete: "cascade" })
+      .notNull(),
+    stockId: uuid("stock_id")
+      .references(() => stocks.id, { onDelete: "cascade" })
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("todo_stocks_unique_idx").on(table.todoId, table.stockId),
+  ]
+);
+
 // Attachments table
 export const attachments = pgTable("attachments", {
   id: uuid("id").defaultRandom().primaryKey(),

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { GripVertical, Trash2, Pencil } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 import { cn, priorityLabel, formatRelative, formatDate } from '@/lib/utils';
@@ -12,6 +13,7 @@ interface TodoItemProps {
 }
 
 export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
+  const navigate = useNavigate();
   const updateTodoStatus = useUpdateTodoStatus();
   const deleteTodo = useDeleteTodo();
 
@@ -19,7 +21,6 @@ export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
 
   return (
     <motion.div
-      layout
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
@@ -35,8 +36,10 @@ export default function TodoItem({ todo, compact, onEdit }: TodoItemProps) {
             <h4
               className={cn(
                 'text-sm font-medium text-[var(--text-primary)] truncate',
-                todo.status === 'done' && 'line-through'
+                todo.status === 'done' && 'line-through',
+                !compact && 'cursor-pointer hover:text-[var(--accent)] transition-colors'
               )}
+              onClick={!compact ? () => navigate(`/todos/${todo.id}`) : undefined}
             >
               {todo.title}
             </h4>

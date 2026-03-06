@@ -18,6 +18,8 @@ export interface Todo {
   assignedTo: string | null;
   dueDate: string | null;
   createdBy: string;
+  sources?: Array<{ id: string; title: string; sourceType: string; url?: string }>;
+  stocks?: Array<{ id: string; ticker: string; companyName: string }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -69,6 +71,8 @@ export interface Stock {
   notes: string | null;
   decisionStatus: 'researching' | 'considering' | 'bought' | 'passed' | 'sold' | 'watching';
   createdBy: string;
+  sources?: Array<{ id: string; title: string; sourceType: string; url?: string }>;
+  todos?: Array<{ id: string; title: string; status: string }>;
   createdAt: string;
   updatedAt: string;
 }

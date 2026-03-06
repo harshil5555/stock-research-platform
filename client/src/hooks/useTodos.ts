@@ -92,3 +92,69 @@ export function useDeleteTodo() {
     onError: () => addToast({ type: 'error', message: 'Failed to delete todo' }),
   });
 }
+
+export function useLinkStockToTodo() {
+  const qc = useQueryClient();
+  const addToast = useUIStore((s) => s.addToast);
+
+  return useMutation({
+    mutationFn: async ({ todoId, stockId }: { todoId: string; stockId: string }) => {
+      const res = await api.post(`/todos/${todoId}/link-stock`, { stockId });
+      return res.data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['todos', vars.todoId] });
+      addToast({ type: 'success', message: 'Stock linked' });
+    },
+    onError: () => addToast({ type: 'error', message: 'Failed to link stock' }),
+  });
+}
+
+export function useUnlinkStockFromTodo() {
+  const qc = useQueryClient();
+  const addToast = useUIStore((s) => s.addToast);
+
+  return useMutation({
+    mutationFn: async ({ todoId, stockId }: { todoId: string; stockId: string }) => {
+      await api.delete(`/todos/${todoId}/link-stock/${stockId}`);
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['todos', vars.todoId] });
+      addToast({ type: 'success', message: 'Stock unlinked' });
+    },
+    onError: () => addToast({ type: 'error', message: 'Failed to unlink stock' }),
+  });
+}
+
+export function useLinkSourceToTodo() {
+  const qc = useQueryClient();
+  const addToast = useUIStore((s) => s.addToast);
+
+  return useMutation({
+    mutationFn: async ({ todoId, sourceId }: { todoId: string; sourceId: string }) => {
+      const res = await api.post(`/todos/${todoId}/link-source`, { sourceId });
+      return res.data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['todos', vars.todoId] });
+      addToast({ type: 'success', message: 'Source linked' });
+    },
+    onError: () => addToast({ type: 'error', message: 'Failed to link source' }),
+  });
+}
+
+export function useUnlinkSourceFromTodo() {
+  const qc = useQueryClient();
+  const addToast = useUIStore((s) => s.addToast);
+
+  return useMutation({
+    mutationFn: async ({ todoId, sourceId }: { todoId: string; sourceId: string }) => {
+      await api.delete(`/todos/${todoId}/link-source/${sourceId}`);
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['todos', vars.todoId] });
+      addToast({ type: 'success', message: 'Source unlinked' });
+    },
+    onError: () => addToast({ type: 'error', message: 'Failed to unlink source' }),
+  });
+}

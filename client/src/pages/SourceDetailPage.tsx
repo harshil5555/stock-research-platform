@@ -20,9 +20,10 @@ import Skeleton from '@/components/ui/Skeleton';
 import FileUpload from '@/components/sources/FileUpload';
 import SourceForm from '@/components/sources/SourceForm';
 import SourceLinker from '@/components/sources/SourceLinker';
+import TodoLinker from '@/components/sources/TodoLinker';
 import CommentThread from '@/components/comments/CommentThread';
 import api from '@/lib/api';
-import { useSource, useUnlinkStock, useDeleteSource } from '@/hooks/useSources';
+import { useSource, useUnlinkStock, useUnlinkTodo, useDeleteSource } from '@/hooks/useSources';
 import { useUIStore } from '@/stores/uiStore';
 import { formatDate, sourceTypeLabels } from '@/lib/utils';
 
@@ -45,6 +46,7 @@ export default function SourceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: source, isLoading } = useSource(id ?? '');
   const unlinkStock = useUnlinkStock();
+  const unlinkTodo = useUnlinkTodo();
   const deleteSource = useDeleteSource();
   const navigate = useNavigate();
   const [showEditModal, setShowEditModal] = useState(false);
@@ -64,6 +66,7 @@ export default function SourceDetailPage() {
   }
 
   const currentStockIds = (source.stocks || []).map((s) => s.id);
+  const currentTodoIds = (source.todos || []).map((t) => t.id);
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -211,18 +214,20 @@ export default function SourceDetailPage() {
         </Card>
       </div>
 
-      {source.todos && source.todos.length > 0 && (
-        <Card>
-          <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-            <CheckSquare size={16} />
-            Linked Todos
+      <Card>
+        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+          <CheckSquare size={16} />
+          Linked Todos
+          {source.todos && source.todos.length > 0 && (
             <span className="text-xs text-[var(--text-secondary)] font-normal">({source.todos.length})</span>
-          </h2>
-          <div className="space-y-2">
+          )}
+        </h2>
+        {source.todos && source.todos.length > 0 && (
+          <div className="space-y-2 mb-4">
             {source.todos.map((todo) => (
               <div
                 key={todo.id}
-                className="flex items-center gap-3 p-3 rounded-lg bg-[var(--hover)]"
+                className="flex items-center gap-3 p-3 rounded-lg bg-[var(--hover)] group"
               >
                 <div className={`w-2 h-2 rounded-full shrink-0 ${todo.status === 'done' ? 'bg-[var(--color-buy)]' : todo.status === 'in_progress' ? 'bg-[var(--accent)]' : 'bg-[var(--color-priority-medium)]'}`} />
                 <span className={`text-sm text-[var(--text-primary)] flex-1 truncate ${todo.status === 'done' ? 'line-through opacity-60' : ''}`}>
@@ -231,11 +236,19 @@ export default function SourceDetailPage() {
                 <span className="text-xs text-[var(--text-secondary)] capitalize shrink-0">
                   {todo.status.replace('_', ' ')}
                 </span>
+                <button
+                  onClick={() => unlinkTodo.mutate({ sourceId: source.id, todoId: todo.id })}
+                  aria-label={`Unlink ${todo.title}`}
+                  className="p-1 rounded text-[var(--text-secondary)] hover:text-[var(--color-sell)] hover:bg-[var(--border)] opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                >
+                  <X size={14} />
+                </button>
               </div>
             ))}
           </div>
-        </Card>
-      )}
+        )}
+        <TodoLinker sourceId={source.id} linkedTodoIds={currentTodoIds} />
+      </Card>
 
       <Card>
         <CommentThread sourceId={source.id} />
