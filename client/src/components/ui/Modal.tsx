@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -11,13 +11,54 @@ interface ModalProps {
   className?: string;
 }
 
+const FOCUSABLE_SELECTOR =
+  '[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export default function Modal({ open, onClose, title, children, className }: ModalProps) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+
   useEffect(() => {
     if (!open) return;
     document.body.style.overflow = 'hidden';
+
+    // Auto-focus first focusable element
+    requestAnimationFrame(() => {
+      const el = contentRef.current;
+      if (!el) return;
+      const first = el.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+      first?.focus();
+    });
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        const el = contentRef.current;
+        if (!el) return;
+        const focusable = Array.from(el.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
     };
+
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.body.style.overflow = '';
@@ -38,12 +79,14 @@ export default function Modal({ open, onClose, title, children, className }: Mod
             onClick={onClose}
           />
           <motion.div
+            ref={contentRef}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.15 }}
             role="dialog"
             aria-modal="true"
+            aria-labelledby={title ? titleId : undefined}
             className={cn(
               'relative bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-xl p-6 max-w-lg w-full mx-4 max-h-[85vh] overflow-y-auto',
               className
@@ -51,7 +94,7 @@ export default function Modal({ open, onClose, title, children, className }: Mod
           >
             {title && (
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-[var(--text-primary)]">{title}</h2>
+                <h2 id={titleId} className="text-lg font-semibold text-[var(--text-primary)]">{title}</h2>
                 <button
                   onClick={onClose}
                   aria-label="Close dialog"
